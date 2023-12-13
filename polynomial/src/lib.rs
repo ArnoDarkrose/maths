@@ -58,6 +58,47 @@ pub mod any_pnm{
         pub fn get(&self) -> &[T] {
             &self.ratios[..]
         }
+
+        //is not overflow safe
+        pub fn evaluate(self, val: T) -> T 
+        where T: std::iter::Sum + Clone,
+        for <'a> &'a T: Mul<&'a T, Output = T>{
+            self.ratios.into_iter().enumerate().map(
+                |v| {
+                    fn fast_pow<T>(n: &T, pow: usize) -> T 
+                    where T: Field + Clone,
+                    for <'a> &'a T: Mul<&'a T, Output = T>{
+                        let mut cur_n = n.clone();
+
+                        let mut cur_pow = 1;
+                        while cur_pow < pow {
+                            if cur_pow + 1 == pow {
+                                cur_n *= n.clone();
+                                cur_pow += 1;
+                            } else if cur_pow * 2 <= pow {
+                                cur_n = &cur_n * &cur_n;
+
+                                cur_pow *= 2;
+                            } else {
+                                cur_n = fast_pow::<T>(n, pow - cur_pow);
+
+                                cur_pow = pow;
+                            }
+                        }
+
+                        cur_n
+                    }
+                    
+                    let(pow, cur_ratio) = v;
+
+                    if cur_ratio != T::ZERO {
+                        cur_ratio * fast_pow::<T>(&val, pow)
+                    } else {
+                        T::ZERO
+                    }
+                }
+            ).sum()
+        }
     }
 
     impl<T> Add for Polynomial<T> where T: Field + Clone{
@@ -378,5 +419,18 @@ pub mod any_pnm{
         }
 
         gcd::<T>(&r, g)
+    } 
+}
+
+#[cfg(test)]
+mod test{
+    use crate::any_pnm::*;
+    #[test]
+    fn test_evaluate() {
+        let a = Polynomial::new(vec![2.0; 200]);
+
+        let b = a.evaluate(1000.0);
+
+        println!("{b}");
     }
 }
