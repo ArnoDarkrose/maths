@@ -1,51 +1,38 @@
 //! # tech 
 //! 
-//! #This a supportive crate for the math workspaces that contains udeful Traits
+//! #This a supportive crate for the math workspaces that contains useful Traits
 
 use std::ops::{Add, Sub, Div, Mul, Neg, AddAssign, SubAssign, DivAssign, MulAssign};
 
-/// Special trait that allows to assume that elements of the type form a field (in algebraic terms)
+/// Special trait that allows to assume that elements of the type form a field (in algebraic terms). 
+/// Types that implement Field are also assumed to be Ring
 pub trait Field 
-where Self: Add<Self, Output = Self> + Sub<Self, Output = Self> + Div<Self, Output = Self> + Mul<Self, Output = Self> + Neg<Output = Self> +
-AddAssign<Self> + SubAssign<Self> + DivAssign<Self> + MulAssign<Self> + PartialEq + Sized,
+where Self: Ring + Div<Self, Output = Self> + DivAssign <Self> + Neg<Output = Self> + ComMul + AssMul
 {
-    fn is_zero(&self) -> bool;
     fn is_one(&self) -> bool;
-    const ZERO: Self;
     const ONE: Self;
 }
 
 impl Field for f32 {
-    fn is_zero(&self) -> bool {
-        self == &0.0 
-    }
-
     fn is_one(&self) -> bool {
         self == &1.0
     }
 
     const ONE: Self = 1.0;
-    const ZERO: Self = 0.0;
 }
 impl Field for f64 {
-    fn is_zero(&self) -> bool {
-        self == &0.0
-    }
-
     fn is_one(&self) -> bool {
         self == &1.0
     }
 
     const ONE: Self = 1.0;
-    const ZERO: Self = 0.0;
 }
 
 
 /// Special trait that allows to assume that elements of the type form a ring (in algebraic terms)
-/// It is also assumed that the types that implement Ring also implement Add, Sub, Mul, Neg, AddAssign, SubAssign, MulAssign
 pub trait Ring
-where Self: Add<Self, Output = Self> + Sub <Self, Output = Self> + Mul<Self, Output = Self> + Neg<Output = Self> +
-AddAssign<Self> + SubAssign<Self> + MulAssign<Self> + ComMul + AssMul + ComAdd + AssAdd + PartialEq + Sized
+where Self: Add<Self, Output = Self> + Sub <Self, Output = Self> + Mul<Self, Output = Self> +
+AddAssign<Self> + SubAssign<Self> + MulAssign<Self> + ComAdd + AssAdd + PartialEq + Sized
 {
     fn is_zero(&self) -> bool;
     const ZERO: Self;
@@ -53,6 +40,23 @@ AddAssign<Self> + SubAssign<Self> + MulAssign<Self> + ComMul + AssMul + ComAdd +
 
 //TODO
 //replace all repeated code with macros
+
+impl Ring for f32 {
+    fn is_zero(&self) -> bool {
+        self == &0.0
+    }
+
+    const ZERO: Self = 0.0;
+}
+
+
+impl Ring for f64 {
+    fn is_zero(&self) -> bool {
+        self == &0.0
+    }
+
+    const ZERO: Self = 0.0;
+}
 
 impl Ring for i8  {
     fn is_zero(&self) -> bool {
