@@ -1,5 +1,5 @@
 pub mod imgn {
-    use tech::Field;
+    use tech::*;
     use std::{
         fmt::Display,
         ops::{Add, Sub, Mul, Div, AddAssign, SubAssign, MulAssign, DivAssign, Neg}
@@ -168,16 +168,23 @@ pub mod imgn {
         }
     }
 
-    impl Field for Imaginary {
-        const ONE: Self = Imaginary {real: 1.0, imaginary: 0.0};
-        const ZERO: Self = Imaginary {real: 0.0, imaginary: 0.0};
+    impl AssAdd for Imaginary {}
+    impl ComAdd for Imaginary {}
+    impl AssMul for Imaginary {}
+    impl ComMul for Imaginary {}
 
-        fn is_one(&self) -> bool {
-            self == &Imaginary::ONE
-        }
+    impl Ring for Imaginary {
+        const ZERO: Self = Imaginary {real: 0.0, imaginary: 0.0};
 
         fn is_zero(&self) -> bool {
             self == &Imaginary::ZERO
+        }
+    }
+    impl Field for Imaginary {
+        const ONE: Self = Imaginary {real: 1.0, imaginary: 0.0};
+
+        fn is_one(&self) -> bool {
+            self == &Imaginary::ONE
         }
     }
 }
