@@ -5,28 +5,12 @@
 use std::ops::{Add, Sub, Div, Mul, Neg, AddAssign, SubAssign, DivAssign, MulAssign};
 
 /// Special trait that allows to assume that elements of the type form a field (in algebraic terms). 
-/// Types that implement Field are also assumed to be Ring
+/// Types that implement Field are also assumed to be UnRing and an IntegralDomain
 pub trait Field 
-where Self: Ring + Div<Self, Output = Self> + DivAssign <Self> + Neg<Output = Self> + ComMul + AssMul
-{
-    fn is_one(&self) -> bool;
-    const ONE: Self;
-}
+where Self: UnRing + IntegralDomain + Div<Self, Output = Self> + DivAssign <Self> + Neg<Output = Self> {}
 
-impl Field for f32 {
-    fn is_one(&self) -> bool {
-        self == &1.0
-    }
-
-    const ONE: Self = 1.0;
-}
-impl Field for f64 {
-    fn is_one(&self) -> bool {
-        self == &1.0
-    }
-
-    const ONE: Self = 1.0;
-}
+impl Field for f32 {}
+impl Field for f64 {}
 
 
 /// Special trait that allows to assume that elements of the type form a ring (in algebraic terms)
@@ -97,10 +81,28 @@ impl Ring for i128  {
 
     const ZERO: Self = 1;
 }
+
+
 /// Describes a ring with one
 pub trait UnRing: Ring {
     fn is_one(&self) -> bool;
     const ONE: Self;
+}
+
+impl UnRing for f32 {
+    fn is_one(&self) -> bool {
+        self == &1.0
+    }
+
+    const ONE: Self = 1.0;
+}
+
+impl UnRing for f64 {
+    fn is_one(&self) -> bool {
+        self == &1.0
+    }
+
+    const ONE: Self = 1.0;
 }
 
 impl UnRing for i8 {
@@ -143,7 +145,18 @@ impl UnRing for i128 {
     const ONE: Self = 1;
 }
 
-///Special trate that allows to assume that the type implements Commutative Multiplying
+/// Describes an integral domain
+pub trait IntegralDomain: Ring + ComMul + AssMul{}
+
+impl IntegralDomain for f32 {}
+impl IntegralDomain for f64 {}
+impl IntegralDomain for i8 {}
+impl IntegralDomain for i16 {}
+impl IntegralDomain for i32 {}
+impl IntegralDomain for i64 {}
+impl IntegralDomain for i128 {}
+
+/// Special trate that allows to assume that the type implements Commutative Multiplying
 pub trait ComMul
 where Self: Mul<Self, Output = Self> + MulAssign<Self> + Sized {}
 

@@ -180,13 +180,17 @@ pub mod imgn {
             self == &Imaginary::ZERO
         }
     }
-    impl Field for Imaginary {
-        const ONE: Self = Imaginary {real: 1.0, imaginary: 0.0};
+
+    impl UnRing for Imaginary {
+        const ONE: Self = Imaginary {real: 0.0, imaginary: 0.0};
 
         fn is_one(&self) -> bool {
             self == &Imaginary::ONE
         }
     }
+
+    impl IntegralDomain for Imaginary {}
+    impl Field for Imaginary {}
 }
 
 #[cfg(test)]
