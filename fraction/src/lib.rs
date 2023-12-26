@@ -1,14 +1,22 @@
-pub fn add(left: usize, right: usize) -> usize {
-    left + right
-}
+pub mod fract {
+    use tech::*;
+    use std::fmt::Display
 
-#[cfg(test)]
-mod tests {
-    use super::*;
+    #[derive(Debug, Clone)]
+    pub struct Fraction <T: Ring> {
+        num: T,
+        denom: T,
+    }
 
-    #[test]
-    fn it_works() {
-        let result = add(2, 2);
-        assert_eq!(result, 4);
+    impl<T: Ring> Fraction<T> {
+        pub fn new (num: T, denom: T) -> Fraction<T> {
+            Fraction {num, denom}
+        }
+    }
+
+    impl<T> Display for Fraction<T> {
+        fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+            
+        }
     }
 }
