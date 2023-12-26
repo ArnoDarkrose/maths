@@ -3,6 +3,7 @@ pub mod fract {
     use std::{
         fmt::Display,
         ops::{Add, Sub, Mul, Div, AddAssign, SubAssign, MulAssign, DivAssign, Neg},
+        cmp,
     };
 
     trait IntoFraction 
@@ -10,11 +11,9 @@ pub mod fract {
         fn into_fraction(self)->Fraction<Self>;
     }
 
-    impl<T: Field> IntoFraction for T {
-        fn into_fraction(self)->Fraction<Self> {
-            Fraction {num: self, denom:Self::ONE}
-        }
-    }
+    //TODO
+    //make an efficient macros implementation of an IntoFraction trait for all Fields except for Fraction
+
     #[derive(Debug, Clone)]
     pub struct Fraction <T: IntegralDomain> {
         num: T,
@@ -35,4 +34,15 @@ pub mod fract {
         }
     }
 
+    impl<T: IntegralDomain, U:IntegralDomain> Mul<Fraction<U>> for Fraction<T> {
+        type Output = ;
+    } 
+
+    impl<T, U> PartialEq<Fraction<U>> for Fraction<T> 
+    where T:IntegralDomain + IntoFraction,
+    U: IntegralDomain + IntoFraction {
+        fn eq(&self, other: &Fraction<U>) -> bool {
+            self.num.into_fraction() * other.denom.into_fraction() == self.denom.into_fraction() * other.num.into_fraction()
+        }
+    }
 }
