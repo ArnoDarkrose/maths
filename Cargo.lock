@@ -3,6 +3,13 @@
 version = 3
 
 [[package]]
+name = "imaginary"
+version = "0.1.0"
+dependencies = [
+ "tech",
+]
+
+[[package]]
 name = "polynomial"
 version = "0.1.0"
 dependencies = [
