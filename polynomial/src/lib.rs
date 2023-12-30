@@ -8,7 +8,7 @@ pub mod any_pnm{
         ops :: {Add, AddAssign, Sub, SubAssign, Mul, MulAssign, Neg, Div},
         fmt::Display,
     };
-    use tech::Field;
+    use tech::{Field, Ring, AssAdd, ComAdd};
 
     #[derive(PartialEq, Debug, Clone)]
     pub struct Polynomial <T: Field> {
@@ -39,10 +39,6 @@ pub mod any_pnm{
             0
         }
         
-        pub fn is_zero(&self) -> bool {
-            self.ratios[0].is_zero() && self.deg() == 0 
-        }
-
         pub fn rm_lead_zero(&mut self) {
             self.ratios.truncate(self.deg() + 1);
         }
@@ -420,6 +416,21 @@ pub mod any_pnm{
 
         gcd::<T>(&r, g)
     } 
+
+    impl<T: Field + Clone> AssAdd for Polynomial<T> {}
+    impl<T: Field + Clone> ComAdd for Polynomial<T> {}
+
+    impl<T> Ring for Polynomial<T>
+    where T: Field + Clone,
+    for <'a> &'a T: Mul<&'a T, Output = T> {
+        fn is_zero(&self) -> bool {
+            self.ratios[0].is_zero() && self.deg() == 0 
+        }
+
+        const ZERO: Self = Polynomial {ratios: [T::ZERO].to_vec()};
+        //TODO
+        //maybe i need to rewrite polynomial too
+    }
 }
 
 #[cfg(test)]
