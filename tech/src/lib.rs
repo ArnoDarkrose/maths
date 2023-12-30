@@ -4,14 +4,44 @@
 
 use std::ops::{Add, Sub, Div, Mul, Neg, AddAssign, SubAssign, DivAssign, MulAssign};
 
+/// A macro for implementing traits
+macro_rules! implTrait {
+    (Ring for $($typ:ty),*) => {
+        $(
+            impl Ring for $typ {
+                fn is_zero(&self) -> bool {
+                    self == &(0 as $typ)
+                }
+
+                const ZERO: Self = (0 as $typ);
+            }
+        )*
+    };
+
+    (UnRing for $($typ: ty),*) => {
+        $(
+            impl UnRing for $typ {
+                fn is_one(&self) -> bool {
+                    self == &(1 as $typ)
+                }
+                const ONE: Self = (1 as $typ);
+            }
+        )*
+    };
+
+    ($i: ident for $($typ: ty),*) => {
+        $(
+            impl $i for $typ {}
+        )*
+    }
+}
+
 /// Special trait that allows to assume that elements of the type form a field (in algebraic terms). 
 /// Types that implement Field are also assumed to be UnRing and an IntegralDomain
 pub trait Field 
 where Self: UnRing + IntegralDomain + Div<Self, Output = Self> + DivAssign <Self> + Neg<Output = Self> {}
 
-impl Field for f32 {}
-impl Field for f64 {}
-
+implTrait!(Field for f32, f64);
 
 /// Special trait that allows to assume that elements of the type form a ring (in algebraic terms)
 pub trait Ring
@@ -22,66 +52,7 @@ AddAssign<Self> + SubAssign<Self> + MulAssign<Self> + ComAdd + AssAdd + PartialE
     const ZERO: Self;
 }
 
-//TODO
-//replace all repeated code with macros
-
-impl Ring for f32 {
-    fn is_zero(&self) -> bool {
-        self == &0.0
-    }
-
-    const ZERO: Self = 0.0;
-}
-
-
-impl Ring for f64 {
-    fn is_zero(&self) -> bool {
-        self == &0.0
-    }
-
-    const ZERO: Self = 0.0;
-}
-
-impl Ring for i8  {
-    fn is_zero(&self) -> bool {
-        self == &0
-    }
-
-    const ZERO: Self = 1;
-}
-
-impl Ring for i16  {
-    fn is_zero(&self) -> bool {
-        self == &0
-    }
-
-    const ZERO: Self = 1;
-}
-
-impl Ring for i32  {
-    fn is_zero(&self) -> bool {
-        self == &0
-    }
-
-    const ZERO: Self = 1;
-}
-
-impl Ring for i64  {
-    fn is_zero(&self) -> bool {
-        self == &0
-    }
-
-    const ZERO: Self = 1;
-}
-
-impl Ring for i128  {
-    fn is_zero(&self) -> bool {
-        self == &0
-    }
-
-    const ZERO: Self = 1;
-}
-
+implTrait!(Ring for f32, f64, i8, i16, i32, i64, i128);
 
 /// Describes a ring with one
 pub trait UnRing: Ring {
@@ -89,116 +60,28 @@ pub trait UnRing: Ring {
     const ONE: Self;
 }
 
-impl UnRing for f32 {
-    fn is_one(&self) -> bool {
-        self == &1.0
-    }
-
-    const ONE: Self = 1.0;
-}
-
-impl UnRing for f64 {
-    fn is_one(&self) -> bool {
-        self == &1.0
-    }
-
-    const ONE: Self = 1.0;
-}
-
-impl UnRing for i8 {
-    fn is_one(&self) -> bool {
-        self == &1
-    }
-
-    const ONE: Self = 1;
-}
-
-impl UnRing for i16 {
-    fn is_one(&self) -> bool {
-        self == &1
-    }
-
-    const ONE: Self = 1;
-}
-
-impl UnRing for i32 {
-    fn is_one(&self) -> bool {
-        self == &1
-    }
-
-    const ONE: Self = 1;
-}
-
-impl UnRing for i64 {
-    fn is_one(&self) -> bool {
-        self == &1
-    }
-
-    const ONE: Self = 1;
-}
-
-impl UnRing for i128 {
-    fn is_one(&self) -> bool {
-        self == &1
-    }
-
-    const ONE: Self = 1;
-}
+implTrait!(UnRing for f32, f64, i8, i16, i32, i64, i128);
 
 /// Describes an integral domain
 pub trait IntegralDomain: Ring + ComMul + AssMul{}
 
-impl IntegralDomain for f32 {}
-impl IntegralDomain for f64 {}
-impl IntegralDomain for i8 {}
-impl IntegralDomain for i16 {}
-impl IntegralDomain for i32 {}
-impl IntegralDomain for i64 {}
-impl IntegralDomain for i128 {}
-
+implTrait!(IntegralDomain for f32, f64, i8, i16, i32, i64, i128);
 /// Special trate that allows to assume that the type implements Commutative Multiplying
-pub trait ComMul
-where Self: Mul<Self, Output = Self> + MulAssign<Self> + Sized {}
+pub trait ComMul : Mul<Self, Output = Self> + MulAssign<Self> + Sized {}
 
-impl ComMul for f32 {}
-impl ComMul for f64 {}
-impl ComMul for i8 {}
-impl ComMul for i16 {}
-impl ComMul for i32 {}
-impl ComMul for i64 {}
-impl ComMul for i128 {}
+implTrait!(ComMul for f32, f64, i8, i16, i32, i64, i128);
 
 ///Special trate that allows to assume that the type implements Associative Multiplying
-pub trait AssMul
-where Self: Mul<Self, Output = Self> + MulAssign<Self> + Sized{}
-impl AssMul for f32 {}
-impl AssMul for f64 {}
-impl AssMul for i8 {}
-impl AssMul for i16 {}
-impl AssMul for i32 {}
-impl AssMul for i64 {}
-impl AssMul for i128 {}
+pub trait AssMul: Mul<Self, Output = Self> + MulAssign<Self> + Sized{}
+
+implTrait!(AssMul for f32, f64, i8, i16, i32, i64, i128);
 
 ///Special trate that allows to assume that the type implememts  Commutative Adding
-pub trait ComAdd
-where Self: Add<Self, Output = Self> + AddAssign<Self> + Sized{}
+pub trait ComAdd: Add<Self, Output = Self> + AddAssign<Self> + Sized{}
 
-impl ComAdd for f32{}
-impl ComAdd for f64{}
-impl ComAdd for i8 {}
-impl ComAdd for i16 {}
-impl ComAdd for i32 {}
-impl ComAdd for i64 {}
-impl ComAdd for i128 {}
+implTrait!(ComAdd for f32, f64, i8, i16, i32, i64, i128);
 
 /// Special trate that allows to assume that the type implements Assoсiative Adding
-pub trait AssAdd
-where Self: Add<Self, Output = Self> + AddAssign<Self> + Sized{}
+pub trait AssAdd: Add<Self, Output = Self> + AddAssign<Self> + Sized{}
 
-impl AssAdd for f32{}
-impl AssAdd for f64{}
-impl AssAdd for i8 {}
-impl AssAdd for i16 {}
-impl AssAdd for i32 {}
-impl AssAdd for i64 {}
-impl AssAdd for i128 {}
+implTrait!(AssAdd for f32, f64, i8, i16, i32, i64, i128);

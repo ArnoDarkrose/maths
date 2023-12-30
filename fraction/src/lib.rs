@@ -34,9 +34,12 @@ pub mod fract {
         }
     }
 
+    /*
     impl<T: IntegralDomain, U:IntegralDomain> Mul<Fraction<U>> for Fraction<T> {
         type Output = ;
+
     } 
+    */
 
     impl<T, U> PartialEq<Fraction<U>> for Fraction<T> 
     where T:IntegralDomain + IntoFraction,
