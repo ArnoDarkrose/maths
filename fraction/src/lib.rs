@@ -1,29 +1,17 @@
-
+#[macro_use]
 pub mod fract {
     use tech::*;
     use std::{
         cmp,
         ops::{Mul, MulAssign, Div, DivAssign, Add, AddAssign, Sub, SubAssign, Neg},
     };
-    /*
-
-    impl<T: IntegralDomain + Clone> Add<&Fraction<T>> for &Fraction<T>
-    where for<'a> &'a T: Mul<&'a T, Output = T> {
-        type Output = Fraction<T>;
-
-        fn add(self, rhs: &Fraction<T>) -> Self::Output {
-            Fraction {num: &self.num * &rhs.denom + &self.denom * &rhs.num, denom: &self.denom * &rhs.denom}
-        }
-    }
-
-
-    */
 
     #[derive(Debug, Clone)]
     pub struct Fraction <T: IntegralDomain> {
         num: T,
         denom: T,
     }
+
 
     macro_rules! defineFract {
         ($($val: tt : $typ: ty),*) => {
@@ -107,9 +95,44 @@ pub mod fract {
                     }
                 }
 
+                impl Add<&Fraction<$typ>> for &Fraction<$typ> {
+                    type Output = Fraction<$typ>;
+
+                    fn add (self, rhs: &Fraction<$typ>) -> Self::Output {
+                        Fraction {num: &self.num * &rhs.denom + &self.denom * &rhs.num, denom: &self.denom * &rhs.denom}
+                    }
+                }
+
+                impl Sub<&Fraction<$typ>> for &Fraction<$typ> {
+                    type Output = Fraction<$typ>;
+
+                    fn sub(self, rhs: &Fraction<$typ>) -> Self::Output {
+                        Fraction {num: &self.num * &rhs.denom - &self.denom * &rhs.denom, denom: &self.denom * &rhs.denom}
+                    }
+                }
+
+                impl Mul<&Fraction<$typ>> for &Fraction<$typ> {
+                    type Output = Fraction<$typ>;
+
+                    fn mul(self, rhs:&Fraction<$typ>) -> Self::Output {
+                        Fraction {num: &self.num * &rhs.num, denom: &self.denom * &rhs.denom}
+                    }
+                }
+
+                impl Div<&Fraction<$typ>> for &Fraction<$typ> {
+                    type Output = Fraction<$typ>;
+
+                    fn div(self, rhs:&Fraction<$typ>) -> Self::Output {
+                        Fraction {num: &self.num * &rhs.denom, denom: &self.denom * &rhs.num}
+                    }
+                }
+                
+
                 //TODO
-                //impl & ops
                 //make a concise way to initialize a fraction like a fract! macro
+                //macros dont work in the module context so its pointless to use defineFract! outside the fract module
+                //need to solve this somehow
+                //maybe i should define its own module for every type
 
                 impl ComAdd for Fraction <$typ> {}
                 impl AssAdd for Fraction <$typ> {}
@@ -146,6 +169,7 @@ pub mod fract {
                         Fraction {num, denom}
                     }
                 }
+            
             )*
         };
     }
@@ -158,9 +182,16 @@ pub mod fract {
 mod test {
     use tech::UnRing;
 
+    use polynomial::any_pnm::*;
+    //TODO
+    //rm the polynomial dependency
     use crate::fract::*;
     #[test]
-    fn test_i32() {
-        
+    fn test_polynom() {
+        let a = Polynomial::new(vec![1.0, 2.0, 3.0]);
+
+        let b = Polynomial::new(vec![1.0, 2.0, 3.0]);
+
+        defineFract!(a: Polynomial<f64>);
     }
 }
