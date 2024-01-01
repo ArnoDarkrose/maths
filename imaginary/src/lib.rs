@@ -174,18 +174,22 @@ pub mod imgn {
     impl ComMul for Imaginary {}
 
     impl Ring for Imaginary {
-        const ZERO: Self = Imaginary {real: 0.0, imaginary: 0.0};
-
         fn is_zero(&self) -> bool {
-            self == &Imaginary::ZERO
+            self == &Imaginary::zero()
+        }
+
+        fn zero() -> Imaginary {
+            Imaginary {real: 0.0, imaginary: 0.0}
         }
     }
 
     impl UnRing for Imaginary {
-        const ONE: Self = Imaginary {real: 0.0, imaginary: 0.0};
-
         fn is_one(&self) -> bool {
-            self == &Imaginary::ONE
+            self == &Imaginary::one()
+        }
+
+        fn one() -> Imaginary {
+            Imaginary {real: 1.0, imaginary: 0.0}
         }
     }
 

@@ -44,7 +44,7 @@ pub mod any_pnm{
         }
     
         pub fn new_monomial(val: T, idx: usize) -> Polynomial<T>  where T: Clone {
-            let mut res = vec![T::ZERO; idx + 1];
+            let mut res = vec![T::zero(); idx + 1];
 
             res[0] = val;
 
@@ -87,10 +87,10 @@ pub mod any_pnm{
                     
                     let(pow, cur_ratio) = v;
 
-                    if cur_ratio != T::ZERO {
+                    if cur_ratio != T::zero() {
                         cur_ratio * fast_pow::<T>(&val, pow)
                     } else {
-                        T::ZERO
+                        T::zero()
                     }
                 }
             ).sum()
@@ -115,7 +115,7 @@ pub mod any_pnm{
             let r_deg = rhs.deg();
 
             if s_deg < r_deg {
-                self.ratios.extend_from_slice(&vec![T::ZERO; r_deg - s_deg]);
+                self.ratios.extend_from_slice(&vec![T::zero(); r_deg - s_deg]);
             }
 
             let r_iter = rhs.ratios.into_iter();
@@ -146,7 +146,7 @@ pub mod any_pnm{
             let deg2 = rhs.deg();
 
             if deg1 < deg2 {
-                self.ratios.extend_from_slice(&vec![T::ZERO; deg2 - deg1]);
+                self.ratios.extend_from_slice(&vec![T::zero(); deg2 - deg1]);
             }
 
             let r_iter = rhs.ratios.into_iter();
@@ -184,7 +184,7 @@ pub mod any_pnm{
         type Output = Self;
 
         fn neg(self) -> Self::Output {
-            self * (-T::ONE)
+            self * (-T::one())
         }
     }
 
@@ -208,7 +208,7 @@ pub mod any_pnm{
             let s_deg = self.deg();
             let r_deg = rhs.deg();
 
-            let mut ratios = vec![T::ZERO; s_deg + r_deg + 1];
+            let mut ratios = vec![T::zero(); s_deg + r_deg + 1];
 
             for i in 0..(s_deg + 1) {
                 for j in 0..(r_deg + 1) {
@@ -289,7 +289,7 @@ pub mod any_pnm{
         type Output = Polynomial<T>;
         
         fn mul(self, rhs: Self) -> Self::Output {
-            let mut ratios = vec![T::ZERO; self.deg() + rhs.deg() + 1];
+            let mut ratios = vec![T::zero(); self.deg() + rhs.deg() + 1];
 
             for (i, s_val) in self.ratios.iter().enumerate() {
                 for (j, r_val) in rhs.ratios.iter().enumerate() {
@@ -321,19 +321,19 @@ pub mod any_pnm{
             let mut ratios_it = self.ratios.iter().enumerate().rev(); 
             let (i, cur_pow_ratio) = ratios_it.next().expect("the iterator returned None while displaying polynomial");
             
-            if *cur_pow_ratio != T::ZERO {
+            if *cur_pow_ratio != T::zero() {
                 if i != 0 && i != 1 {
                     write!(
                         f, 
                         "{}x^{} ", 
-                        if *cur_pow_ratio == T::ONE {"".to_string()} else {cur_pow_ratio.to_string()},
+                        if *cur_pow_ratio == T::one() {"".to_string()} else {cur_pow_ratio.to_string()},
                         i
                     )?;
                 } else if i == 1 {
                     write!(
                         f, 
                         "{}x ", 
-                        if *cur_pow_ratio == T::ONE {"".to_string()} else {cur_pow_ratio.to_string()},
+                        if *cur_pow_ratio == T::one() {"".to_string()} else {cur_pow_ratio.to_string()},
                     )?;
                 } else {
                     write!(
@@ -345,19 +345,19 @@ pub mod any_pnm{
             }
             
             for(i, cur_pow_ratio) in ratios_it {
-                if *cur_pow_ratio != T::ZERO {
+                if *cur_pow_ratio != T::zero() {
                     if i != 0 && i != 1 {
                         write!(
                             f,
                             "+ {}x^{} ",
-                            if *cur_pow_ratio == T::ONE {"".to_string()} else {cur_pow_ratio.to_string()},
+                            if *cur_pow_ratio == T::one() {"".to_string()} else {cur_pow_ratio.to_string()},
                             i
                         )?;
                     } else if i == 1 {
                         write!(
                             f,
                             "+ {}x ",
-                            if *cur_pow_ratio == T::ONE {"".to_string()} else {cur_pow_ratio.to_string()},
+                            if *cur_pow_ratio == T::one() {"".to_string()} else {cur_pow_ratio.to_string()},
                         )?;
                     } else {
                         write!(
@@ -384,22 +384,22 @@ pub mod any_pnm{
         let deg_g = g.deg();
 
         if deg_f < deg_g{
-            return Ok((Polynomial::new(vec![T::ZERO]), f.clone()));
+            return Ok((Polynomial::new(vec![T::zero()]), f.clone()));
         }
 
         let sub_ratio = &f.ratios[deg_f]/&g.ratios[deg_g];
 
-        let f1 = Polynomial::new_monomial(T::ONE, deg_f - deg_g);
+        let f1 = Polynomial::new_monomial(T::one(), deg_f - deg_g);
         let f1 = &(&f1 * g) * (&sub_ratio);
         let f1 = f - &f1;
 
         if f1.is_zero() {
-            return Ok((&Polynomial::new_monomial(T::ONE, deg_f - deg_g) * (&sub_ratio), Polynomial::new(vec![T::ZERO])));
+            return Ok((&Polynomial::new_monomial(T::one(), deg_f - deg_g) * (&sub_ratio), Polynomial::new(vec![T::zero()])));
         }
 
         let (q1, r1) = try_div_with_rem::<T>(&f1, g)?;
 
-        let q = Polynomial::new_monomial(T::ONE, deg_f - deg_g) * (sub_ratio) + q1;
+        let q = Polynomial::new_monomial(T::one(), deg_f - deg_g) * (sub_ratio) + q1;
         let r = r1;
 
         Ok((q, r))
@@ -427,9 +427,9 @@ pub mod any_pnm{
             self.ratios[0].is_zero() && self.deg() == 0 
         }
 
-        const ZERO: Self = Polynomial {ratios: [T::ZERO].to_vec()};
-        //TODO
-        //maybe i need to rewrite polynomial too
+        fn zero() -> Polynomial<T> {
+            Polynomial::new(vec![T::zero()])
+        }
     }
 }
 

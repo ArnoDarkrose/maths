@@ -13,7 +13,9 @@ macro_rules! implTrait {
                     self == &(0 as $typ)
                 }
 
-                const ZERO: Self = (0 as $typ);
+                fn zero () -> $typ {
+                    0 as $typ
+                }
             }
         )*
     };
@@ -24,7 +26,10 @@ macro_rules! implTrait {
                 fn is_one(&self) -> bool {
                     self == &(1 as $typ)
                 }
-                const ONE: Self = (1 as $typ);
+            
+                fn one () -> $typ {
+                    1 as $typ
+                }
             }
         )*
     };
@@ -49,7 +54,7 @@ where Self: Add<Self, Output = Self> + Sub <Self, Output = Self> + Mul<Self, Out
 AddAssign<Self> + SubAssign<Self> + MulAssign<Self> + ComAdd + AssAdd + PartialEq + Sized
 {
     fn is_zero(&self) -> bool;
-    const ZERO: Self;
+    fn zero() -> Self;
 }
 
 implTrait!(Ring for f32, f64, i8, i16, i32, i64, i128);
@@ -57,7 +62,7 @@ implTrait!(Ring for f32, f64, i8, i16, i32, i64, i128);
 /// Describes a ring with one
 pub trait UnRing: Ring {
     fn is_one(&self) -> bool;
-    const ONE: Self;
+    fn one() -> Self;
 }
 
 implTrait!(UnRing for f32, f64, i8, i16, i32, i64, i128);

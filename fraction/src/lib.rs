@@ -121,7 +121,9 @@ pub mod fract {
                         self.num.is_zero()
                     }
 
-                    const ZERO: Fraction<$typ> = Fraction {num: <$typ>::ZERO, denom: $val};
+                    fn zero() -> Fraction<$typ> {
+                        Fraction {num: <$typ>::zero(), denom: $val}
+                    }
                 }
 
                 impl UnRing for Fraction <$typ> {
@@ -129,7 +131,9 @@ pub mod fract {
                         self.num == self.denom
                     }
 
-                    const ONE: Fraction<$typ> = Fraction {num: $val, denom: $val};
+                    fn one() -> Fraction<$typ> {
+                        Fraction {num: $val, denom: $val}
+                    }
                 }
 
                 impl IntegralDomain for Fraction <$typ> {}
