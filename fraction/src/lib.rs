@@ -1,20 +1,26 @@
 #[macro_use]
 pub mod fract {
-    use tech::*;
-    use std::{
-        cmp,
-        ops::{Mul, MulAssign, Div, DivAssign, Add, AddAssign, Sub, SubAssign, Neg},
-    };
+    use tech::IntegralDomain;
+
+    //TODO
+    //this is actually a bad idea because this allows users to initialize a struct without defineFract!
+    //moreover i wont be able to define impls in external crates so it seems like a really bad design as a whole
+    //i should seriously think about something like a personal Fraction mod for every type
 
     #[derive(Debug, Clone)]
     pub struct Fraction <T: IntegralDomain> {
-        num: T,
-        denom: T,
+        pub num: T,
+        pub denom: T,
     }
 
 
     macro_rules! defineFract {
-        ($($val: tt : $typ: ty),*) => {
+        ($($val: expr ; $typ: ty),*) => {
+                use tech::*;
+                use std::{
+                    cmp,
+                    ops::{Mul, MulAssign, Div, DivAssign, Add, AddAssign, Sub, SubAssign, Neg},
+                };
             $(
                 impl cmp::PartialEq for Fraction<$typ>{
                     fn eq(&self, other: &Self) -> bool {
@@ -174,24 +180,6 @@ pub mod fract {
         };
     }
 
-    defineFract!(1.0 : f32, 1.0 : f64, 1: i8, 1 : i16, 1: i32, 1 : i64, 1 : i128);
+    defineFract!(1.0 ; f32, 1.0 ; f64, 1; i8, 1 ; i16, 1; i32, 1 ; i64, 1 ; i128);
 
-}
-
-#[cfg(test)]
-mod test {
-    use tech::UnRing;
-
-    use polynomial::any_pnm::*;
-    //TODO
-    //rm the polynomial dependency
-    use crate::fract::*;
-    #[test]
-    fn test_polynom() {
-        let a = Polynomial::new(vec![1.0, 2.0, 3.0]);
-
-        let b = Polynomial::new(vec![1.0, 2.0, 3.0]);
-
-        defineFract!(a: Polynomial<f64>);
-    }
 }

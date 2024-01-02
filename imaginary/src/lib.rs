@@ -1,5 +1,5 @@
 pub mod imgn {
-    use tech::*;
+    use tech::{AssAdd, AssMul, ComAdd, ComMul, Ring, UnRing, IntegralDomain, Field, Meta};
     use std::{
         fmt::Display,
         ops::{Add, Sub, Mul, Div, AddAssign, SubAssign, MulAssign, DivAssign, Neg}
@@ -195,19 +195,15 @@ pub mod imgn {
 
     impl IntegralDomain for Imaginary {}
     impl Field for Imaginary {}
-}
 
-#[cfg(test)]
-mod test {
-    use crate::imgn::*;
-    #[test]
-    fn test_root() {
-        let a = Imaginary::new(0.0, -1.0);
+    impl Meta for Imaginary {
+        fn non_zero () -> Self {
+            Imaginary::one()
+        }
 
-        let vec = a.root(3);
-
-        for i in vec.iter() {
-            print!("{i} ");
+        fn name () -> String {
+            "Imaginary".to_string()
         }
     }
 }
+

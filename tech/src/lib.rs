@@ -5,6 +5,7 @@
 use std::ops::{Add, Sub, Div, Mul, Neg, AddAssign, SubAssign, DivAssign, MulAssign};
 
 /// A macro for implementing traits
+/// It is not assumed to be used by the crate users
 macro_rules! implTrait {
     (Ring for $($typ:ty),*) => {
         $(
@@ -29,6 +30,20 @@ macro_rules! implTrait {
             
                 fn one () -> $typ {
                     1 as $typ
+                }
+            }
+        )*
+    };
+
+    (Meta for $(($typ: ty; $name:expr)),*) => {
+        $(
+            impl Meta for $typ {
+                fn non_zero() -> $typ {
+                    <$typ>::one()
+                }
+
+                fn name() -> String {
+                    $name.to_string()
                 }
             }
         )*
@@ -90,3 +105,18 @@ implTrait!(ComAdd for f32, f64, i8, i16, i32, i64, i128);
 pub trait AssAdd: Add<Self, Output = Self> + AddAssign<Self> + Sized{}
 
 implTrait!(AssAdd for f32, f64, i8, i16, i32, i64, i128);
+
+///Trait for accessing metadata about its implementor
+pub trait Meta{
+    
+    ///Method for getting an example of the non_zero T object (if there even is a zero for the type)
+    fn non_zero () -> Self;
+
+    ///Returns the full name of T as a String
+    fn name () -> String;
+
+    //TODO
+    //I have an idea to add method that returns the vec that contains struct fields
+} 
+
+implTrait!(Meta for (f32; "f32"), (f64; "f64"), (i8; "i8"), (i16; "i16"), (i32; "i32"), (i64; "i64"), (i128; "i128"));

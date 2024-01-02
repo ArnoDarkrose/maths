@@ -8,7 +8,7 @@ pub mod any_pnm{
         ops :: {Add, AddAssign, Sub, SubAssign, Mul, MulAssign, Neg, Div},
         fmt::Display,
     };
-    use tech::{Field, Ring, AssAdd, ComAdd};
+    use tech::{Field, Ring, AssAdd, ComAdd, AssMul, ComMul, UnRing, IntegralDomain, Meta};
 
     #[derive(PartialEq, Debug, Clone)]
     pub struct Polynomial <T: Field> {
@@ -188,6 +188,7 @@ pub mod any_pnm{
         }
     }
 
+    //I dont like that i have to be able to multiply T refs in order to multiply Polynomial::<T>
     impl<T> Mul for Polynomial<T> 
     where T: Field + Clone,
     for <'a> &'a T: Mul<&'a T, Output = T> {
@@ -431,17 +432,40 @@ pub mod any_pnm{
             Polynomial::new(vec![T::zero()])
         }
     }
-}
 
-#[cfg(test)]
-mod test{
-    use crate::any_pnm::*;
-    #[test]
-    fn test_evaluate() {
-        let a = Polynomial::new(vec![2.0; 200]);
+    impl<T> UnRing for Polynomial<T>
+    where T: Field + Clone,
+    for <'a> &'a T: Mul<&'a T, Output = T>{
+       fn is_one(&self) -> bool {
+            self == &Polynomial::<T>::one() 
+       } 
 
-        let b = a.evaluate(1000.0);
+       fn one() -> Self {
+           Polynomial::new(vec![T::one()])
+       }
+    }
 
-        println!("{b}");
+    impl<T> AssMul for Polynomial<T> 
+    where T: Field + Clone,
+    for <'a> &'a T: Mul<&'a T, Output = T> {}
+
+    impl<T> ComMul for Polynomial<T>
+    where T: Field + Clone,
+    for <'a> &'a T: Mul<&'a T, Output = T> {}
+
+    impl<T> IntegralDomain for Polynomial<T>
+    where T: Field + Clone,
+    for <'a> &'a T: Mul<&'a T, Output = T> {}
+
+    impl<T> Meta for Polynomial<T>
+    where T: Field + Meta + Clone,
+    for <'a> &'a T: Mul<&'a T, Output = T> {
+        fn non_zero () -> Self {
+            Polynomial::<T>::one()
+        }
+
+        fn name () -> String {
+            format!("Polynomial<{}>", T::name())
+        }
     }
 }
