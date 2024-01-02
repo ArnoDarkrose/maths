@@ -2,6 +2,7 @@
 //! 
 //! Polynomial is a crate that provides functionality for working with a ring of polynomials
 
+#[macro_use]
 pub mod any_pnm{
     use std::{
         vec,
@@ -467,5 +468,25 @@ pub mod any_pnm{
         fn name () -> String {
             format!("Polynomial<{}>", T::name())
         }
+    }
+
+    #[allow(unused_macros)]
+    macro_rules! polynom {
+        ($($rat: expr),*) => {
+            let ratios = vec![$($rat),*];
+
+            Polynomial::new(ratios)
+        };
+
+        ($val:expr ; $idx:expr) => {
+            Polynomial::new_monomial($val, $idx)
+        }
+    }
+
+    #[allow(unused_macros)]
+    macro_rules! monom {
+        ($val:expr ; $idx:expr) => {
+            Polynomial::new_monomial($val, $idx)
+        };
     }
 }

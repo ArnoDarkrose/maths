@@ -2,6 +2,9 @@
 //! 
 //! #This a supportive crate for the math workspaces that contains useful Traits
 
+//TODO
+//I can make users only implement one() and zero() bc is_zero() ans is_one() can for sure be provided automatically
+
 use std::ops::{Add, Sub, Div, Mul, Neg, AddAssign, SubAssign, DivAssign, MulAssign};
 
 /// A macro for implementing traits

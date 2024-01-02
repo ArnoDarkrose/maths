@@ -1,185 +1,194 @@
 #[macro_use]
 pub mod fract {
-    use tech::IntegralDomain;
+    use tech::{IntegralDomain, Meta, AssAdd, AssMul, ComAdd, ComMul, Ring, UnRing, Field};
 
-    //TODO
-    //this is actually a bad idea because this allows users to initialize a struct without defineFract!
-    //moreover i wont be able to define impls in external crates so it seems like a really bad design as a whole
-    //i should seriously think about something like a personal Fraction mod for every type
+    use std::ops::{Mul, MulAssign, Add, AddAssign, Sub, SubAssign, Div, DivAssign, Neg};
 
     #[derive(Debug, Clone)]
-    pub struct Fraction <T: IntegralDomain> {
-        pub num: T,
-        pub denom: T,
+    pub struct Fraction <T: IntegralDomain + Meta> {
+        num: T,
+        denom: T,
     }
 
+    impl <T: IntegralDomain + Meta> PartialEq for Fraction<T>
+    where for <'a> &'a T: Mul<&'a T, Output = T> {
+        fn eq(&self, other: &Self) -> bool {
+            &self.num * &other.denom == &self.denom * &other.num
+        }
+    }
 
-    macro_rules! defineFract {
-        ($($val: expr ; $typ: ty),*) => {
-                use tech::*;
-                use std::{
-                    cmp,
-                    ops::{Mul, MulAssign, Div, DivAssign, Add, AddAssign, Sub, SubAssign, Neg},
-                };
-            $(
-                impl cmp::PartialEq for Fraction<$typ>{
-                    fn eq(&self, other: &Self) -> bool {
-                        &self.num * &other.denom == &self.denom * &other.num
-                    }
-                }
+    impl<T: IntegralDomain + Meta> Mul for Fraction<T> {
+        type Output = Fraction<T>;
 
-                impl Mul for Fraction<$typ> {
-                    type Output = Fraction<$typ>;
+        fn mul(self, rhs: Self) -> Self::Output {
+            Fraction {num: self.num * rhs.num, denom: self.denom * rhs.denom}
+        }
+    }
 
-                    fn mul(self, rhs: Self) -> Self::Output {
-                        Fraction {num: self.num * rhs.num, denom: self.denom * rhs.denom}
-                    }
-                }
+    impl<T: IntegralDomain + Meta> MulAssign for Fraction<T> {
+        fn mul_assign(&mut self, rhs: Self) {
+            self.num *= rhs.num;
+            self.denom *= rhs.denom;
+        }
+    }
 
-                impl MulAssign for Fraction<$typ> {
-                    fn mul_assign(&mut self, rhs: Self) {
-                        self.num *= rhs.num;
-                        self.denom *= rhs.denom;
-                    }  
-                }
+    impl<T: IntegralDomain + Meta> Div for Fraction<T> {
+        type Output = Fraction<T>;
 
+        fn div(self, rhs: Self) -> Self::Output {
+            Fraction {num: self.num * rhs.denom, denom: self.denom * rhs.num}            
+        }
+    }
 
-                impl Div for Fraction<$typ> {
-                    type Output = Fraction<$typ>;
+    impl<T: IntegralDomain + Meta> DivAssign for Fraction<T> {
+        fn div_assign(&mut self, rhs: Self) {
+            self.num *= rhs.denom;
+            self.denom *= rhs.num;
+        }
+    }
 
-                    fn div(self, rhs: Self) -> Self::Output {
-                        Fraction {num: self.num * rhs.denom, denom: self.denom * rhs.num}            
-                    }
-                }
+    impl<T: IntegralDomain + Clone + Meta> Add for Fraction<T> {
+        type Output = Fraction<T>;
 
-                impl DivAssign for Fraction<$typ> {
-                    fn div_assign(&mut self, rhs: Self) {
-                        self.num *= rhs.denom;
-                        self.denom *= rhs.num;
-                    }
-                }
+        fn add(self, rhs: Self) -> Self::Output {
+            Fraction {num: self.num * rhs.denom.clone() + self.denom.clone() * rhs.num, denom: self.denom * rhs.denom}
+        }
+    }
 
-                impl Add for Fraction<$typ> {
-                    type Output = Fraction<$typ>;
+    impl<T: IntegralDomain + Clone + Meta> AddAssign for Fraction<T> {
+        fn add_assign(&mut self, rhs: Self) {
+            let res = self.clone() + rhs;
 
-                    fn add(self, rhs: Self) -> Self::Output {
-                        Fraction {num: self.num * rhs.denom.clone() + self.denom.clone() * rhs.num, denom: self.denom * rhs.denom}
-                    }
-                }
+            self.num = res.num;
+            self.denom = res.denom;
+        }
+    }
 
-                impl AddAssign for Fraction<$typ>{
-                    fn add_assign(&mut self, rhs: Self) {
-                        let res = self.clone() + rhs;
+    impl<T: IntegralDomain + Clone + Meta> Sub for Fraction<T> {
+        type Output = Fraction<T>;
 
-                        self.num = res.num;
-                        self.denom = res.denom;
-                    } 
-                }
+        fn sub(self, rhs: Self) -> Self::Output {
+            Fraction {num: self.num * rhs.denom.clone() - self.denom.clone() * rhs.num, denom: self.denom * rhs.denom}
+        }
+    }
 
-                impl Sub for Fraction<$typ> {
-                    type Output = Self;
+    impl<T: IntegralDomain + Clone + Meta> SubAssign for Fraction<T> {
+        fn sub_assign(&mut self, rhs: Self) {
+            let res = self.clone() - rhs;
 
-                    fn sub(self, rhs: Self) -> Self::Output {
-                        Fraction {num: self.num * rhs.denom.clone() - self.denom.clone() * rhs.num, denom: self.denom * rhs.denom}
-                    }
-                }
+            self.num = res.num;
+            self.denom = res.denom;
+        }
+    }
 
-                impl SubAssign for Fraction<$typ> {
-                    fn sub_assign(&mut self, rhs: Self) {
-                        let res = self.clone() - rhs;
+    impl<T: IntegralDomain + Meta> Neg for Fraction<T> {
+        type Output = Fraction<T>;
+        
+        fn neg(self) -> Self::Output {
+            Fraction {num: self.num * (T::zero() - T::non_zero()), denom: self.denom * T::non_zero()}
+        }
+    }
 
-                        self.num = res.num;
-                        self.denom = res.denom;
-                    }
-                }
+    impl<T: IntegralDomain + Meta> Add for &Fraction<T>
+    where for <'a> &'a T: Mul<&'a T, Output = T> {
+        type Output = Fraction<T>;
 
-                impl Neg for Fraction<$typ> {
-                    type Output = Fraction<$typ>;
+        fn add(self, rhs: Self) -> Self::Output {
+            Fraction {num: &self.num * &rhs.denom + &self.denom * &rhs.num, denom: &self.denom * &rhs.denom}
+        }
+    }
 
-                    fn neg(self) -> Self::Output {
-                        Fraction {num: self.num * (-$val), denom: self.denom * (-$val)}              
-                    }
-                }
+    impl<T: IntegralDomain + Meta> Sub for &Fraction<T> 
+    where for <'a> &'a T: Mul<&'a T, Output = T> {
+        type Output = Fraction<T>;
 
-                impl Add<&Fraction<$typ>> for &Fraction<$typ> {
-                    type Output = Fraction<$typ>;
+        fn sub(self, rhs: Self) -> Self::Output {
+            Fraction {num: &self.num * &rhs.denom - &self.denom * &rhs.num, denom: &self.denom * &rhs.denom}
+        } 
+    }
 
-                    fn add (self, rhs: &Fraction<$typ>) -> Self::Output {
-                        Fraction {num: &self.num * &rhs.denom + &self.denom * &rhs.num, denom: &self.denom * &rhs.denom}
-                    }
-                }
+    impl<T: IntegralDomain + Meta> Mul for &Fraction<T> 
+    where for <'a> &'a T: Mul<&'a T, Output = T> {
+        type Output = Fraction<T>;
 
-                impl Sub<&Fraction<$typ>> for &Fraction<$typ> {
-                    type Output = Fraction<$typ>;
+        fn mul(self, rhs: Self) -> Self::Output {
+            Fraction {num: &self.num * &rhs.num, denom: &self.denom * &rhs.denom}
+        }
+    }
 
-                    fn sub(self, rhs: &Fraction<$typ>) -> Self::Output {
-                        Fraction {num: &self.num * &rhs.denom - &self.denom * &rhs.denom, denom: &self.denom * &rhs.denom}
-                    }
-                }
+    impl<T: IntegralDomain + Meta> Div for &Fraction<T>
+    where for <'a> &'a T: Mul<&'a T, Output = T> {
+        type Output = Fraction<T>;
+    
+        fn div(self, rhs: Self) -> Self::Output {
+            Fraction {num: &self.num * &rhs.denom, denom: &self.denom * &rhs.num}
+        }
+    }
 
-                impl Mul<&Fraction<$typ>> for &Fraction<$typ> {
-                    type Output = Fraction<$typ>;
-
-                    fn mul(self, rhs:&Fraction<$typ>) -> Self::Output {
-                        Fraction {num: &self.num * &rhs.num, denom: &self.denom * &rhs.denom}
-                    }
-                }
-
-                impl Div<&Fraction<$typ>> for &Fraction<$typ> {
-                    type Output = Fraction<$typ>;
-
-                    fn div(self, rhs:&Fraction<$typ>) -> Self::Output {
-                        Fraction {num: &self.num * &rhs.denom, denom: &self.denom * &rhs.num}
-                    }
-                }
-                
-
-                //TODO
-                //make a concise way to initialize a fraction like a fract! macro
-                //macros dont work in the module context so its pointless to use defineFract! outside the fract module
-                //need to solve this somehow
-                //maybe i should define its own module for every type
-
-                impl ComAdd for Fraction <$typ> {}
-                impl AssAdd for Fraction <$typ> {}
-                impl ComMul for Fraction <$typ> {}
-                impl AssMul for Fraction <$typ> {}
-
-                impl Ring for Fraction <$typ> {
-                    fn is_zero(&self) -> bool {
-                        self.num.is_zero()
-                    }
-
-                    fn zero() -> Fraction<$typ> {
-                        Fraction {num: <$typ>::zero(), denom: $val}
-                    }
-                }
-
-                impl UnRing for Fraction <$typ> {
-                    fn is_one(&self) -> bool {
-                        self.num == self.denom
-                    }
-
-                    fn one() -> Fraction<$typ> {
-                        Fraction {num: $val, denom: $val}
-                    }
-                }
-
-                impl IntegralDomain for Fraction <$typ> {}
-
-                impl Field for Fraction <$typ> {}
-
-                
-                impl Fraction <$typ> {
-                    pub fn new(num: $typ, denom: $typ) ->Fraction<$typ> {
-                        Fraction {num, denom}
-                    }
-                }
-            
-            )*
+    macro_rules! implTrait {
+        ($($i: ident),*) => {
+           $(
+            impl<T: IntegralDomain + Meta + Clone> $i for Fraction <T> where for <'a> &'a T: Mul<&'a T, Output = T> {}
+           )*
         };
     }
 
-    defineFract!(1.0 ; f32, 1.0 ; f64, 1; i8, 1 ; i16, 1; i32, 1 ; i64, 1 ; i128);
+    implTrait!(ComAdd, ComMul, AssAdd, AssMul, IntegralDomain, Field);
 
+    impl<T: IntegralDomain + Meta + Clone> Ring for Fraction<T> 
+    where for <'a> &'a T: Mul<&'a T, Output = T> {
+        fn is_zero(&self) -> bool {
+            self.num.is_zero()
+        }
+
+        fn zero() -> Self {
+            Fraction {num: T::zero(), denom: T::non_zero()}
+        }
+    }
+
+    impl<T: IntegralDomain + Meta + Clone> UnRing for Fraction<T>
+    where for <'a> &'a T: Mul<&'a T, Output = T> {
+        fn is_one(&self) -> bool {
+            self.num == self.denom
+        }
+
+        fn one() -> Self {
+            Fraction {num: T::non_zero(), denom: T::non_zero()}
+        } 
+    }
+
+    impl<T: IntegralDomain + Meta + Clone> Meta for Fraction<T> {
+        fn name () -> String {
+            format!("Fraction<{}>", T::name())
+        }
+
+        fn non_zero () -> Self {
+            Fraction {num: T::non_zero(), denom: T::non_zero()}
+        }
+    }
+
+    impl<T: IntegralDomain + Meta> Fraction<T> {
+        pub fn new(num: T, denom: T) -> Fraction<T> {
+            if denom.is_zero() {
+                panic!("Creating a Fraction with zero denom");
+            }
+
+            Fraction {num, denom}
+        }
+
+        pub fn denom(&self) -> &T {
+            &self.denom
+        }
+
+        pub fn num(&self) -> &T {
+            &self.num
+        }
+    }
+
+    #[allow(unused_macros)]
+    macro_rules! fract {
+        ($num: expr, $denom:expr) => {
+            Fraction::new($num, $denom)
+        };
+    }
 }

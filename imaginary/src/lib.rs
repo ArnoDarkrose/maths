@@ -21,7 +21,7 @@ pub mod imgn {
         }
     }
     
-    #[derive(Debug, PartialEq, Clone)]
+    #[derive(Debug, PartialEq, Clone, Copy)]
     pub struct Imaginary {
         real: f64,
         imaginary: f64,
