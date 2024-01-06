@@ -6,10 +6,10 @@
 pub mod any_pnm{
     use std::{
         vec,
-        ops :: {Add, AddAssign, Sub, SubAssign, Mul, MulAssign, Neg, Div},
+        ops :: {Add, AddAssign, Sub, SubAssign, Mul, MulAssign, Neg, Div, Rem},
         fmt::Display,
     };
-    use tech::{Field, Ring, AssAdd, ComAdd, AssMul, ComMul, UnRing, IntegralDomain, Meta};
+    use tech::{Field, Ring, AssAdd, ComAdd, AssMul, ComMul, UnRing, IntegralDomain, Meta, Gcd};
 
     #[derive(PartialEq, Debug, Clone)]
     pub struct Polynomial <T: Field> {
@@ -96,6 +96,24 @@ pub mod any_pnm{
                 }
             ).sum()
         }
+    }
+
+    #[macro_export]
+    macro_rules! polynom {
+        ($($rat: expr),*) => {
+            {
+                let ratios = vec![$($rat),*];
+
+                Polynomial::new(ratios)
+            }
+        };
+    }
+
+    #[macro_export]
+    macro_rules! monom {
+        ($val:expr ; $idx:expr) => {
+            Polynomial::new_monomial($val, $idx)
+        };
     }
 
     impl<T> Add for Polynomial<T> where T: Field + Clone{
@@ -375,49 +393,63 @@ pub mod any_pnm{
         }
     }
 
-    pub fn try_div_with_rem<T>(f: &Polynomial<T>, g: &Polynomial<T>) -> Result<(Polynomial<T>, Polynomial<T>), &'static str> 
-    where T: Field + Clone,
-    for <'a> &'a T: Mul<&'a T, Output = T> + Sub<&'a T, Output = T> + Neg<Output = T> + Div<&'a T, Output = T>{
-        if g.is_zero() {
-            return Err("dividing by zero Polynomial");
-        }
+    impl<T: Field + Clone> Polynomial<T>
+    where for <'a> &'a T: Mul<&'a T, Output = T> +  Div<&'a T, Output = T> + Neg<Output = T> + Sub<&'a T, Output = T>{
+        pub fn div_with_rem(&self, rhs: &Polynomial<T>) -> (Polynomial<T>, Polynomial<T>) {
+            if rhs.is_zero() {
+                panic!("dividing by zero Polynomial");
+            }
 
-        let deg_f = f.deg();
-        let deg_g = g.deg();
+            let deg_s = self.deg();
+            let deg_r = rhs.deg();
 
-        if deg_f < deg_g{
-            return Ok((Polynomial::new(vec![T::zero()]), f.clone()));
-        }
+            if deg_s < deg_r {
+                return (polynom!(T::zero()), self.clone());
+            }
 
-        let sub_ratio = &f.ratios[deg_f]/&g.ratios[deg_g];
+            let sub_ratio = &self.ratios[deg_s]/&rhs.ratios[deg_r];
 
-        let f1 = Polynomial::new_monomial(T::one(), deg_f - deg_g);
-        let f1 = &(&f1 * g) * (&sub_ratio);
-        let f1 = f - &f1;
+            let f1 = monom!(T::one(); deg_s - deg_r);
+            let f1 = &(&f1 * rhs) * (&sub_ratio);
+            let f1 = self - &f1;
 
-        if f1.is_zero() {
-            return Ok((&Polynomial::new_monomial(T::one(), deg_f - deg_g) * (&sub_ratio), Polynomial::new(vec![T::zero()])));
-        }
+            if f1.is_zero() {
+                return (&monom!(T::one(); deg_s - deg_r) * (&sub_ratio), polynom!(T::zero()));
+            }
 
-        let (q1, r1) = try_div_with_rem::<T>(&f1, g)?;
+            let (q1, r1) = f1.div_with_rem(rhs);
 
-        let q = Polynomial::new_monomial(T::one(), deg_f - deg_g) * (sub_ratio) + q1;
-        let r = r1;
+            let q = monom!(T::one(); deg_s - deg_r) * (sub_ratio) + q1;
+            let r = r1;
 
-        Ok((q, r))
+            (q, r)
+                
+            }
     }
 
-    pub fn gcd<T> (f: &Polynomial<T>, g: &Polynomial<T>) -> Result<Polynomial<T>, &'static str> 
-    where T: Field + Clone,
-    for <'a> &'a T: Mul<&'a T, Output = T> + Sub<&'a T, Output = T> + Neg<Output = T> + Div<&'a T, Output = T> {
-        let (_, r) = try_div_with_rem::<T>(f, g)?;
+    impl<T: Field + Clone> Rem<&Polynomial<T>> for &Polynomial<T>
+    where for <'a> &'a T: Mul<&'a T, Output = T> + Div<&'a T, Output = T> + Neg<Output = T> + Sub<&'a T, Output = T> {
+        type Output = Polynomial<T>;
 
-        if r.is_zero() {
-            return Ok(g.clone());
+        fn rem(self, rhs: &Polynomial<T>) -> Self::Output {
+            let (_, r) = self.div_with_rem(&rhs);
+
+            r
         }
+    }
 
-        gcd::<T>(&r, g)
-    } 
+    impl<T: Field + Clone> Gcd for Polynomial<T>
+    where for <'a> &'a T: Mul<&'a T, Output = T> +  Div<&'a T, Output = T> + Neg<Output = T> + Sub<&'a T, Output = T>{
+        fn gcd(&self, rhs: &Self) -> Self{
+            let r = self % rhs;
+
+            if r.is_zero() {
+                return rhs.clone();
+            }
+
+            r.gcd(rhs)
+        }
+    }
 
     impl<T: Field + Clone> AssAdd for Polynomial<T> {}
     impl<T: Field + Clone> ComAdd for Polynomial<T> {}
@@ -425,10 +457,6 @@ pub mod any_pnm{
     impl<T> Ring for Polynomial<T>
     where T: Field + Clone,
     for <'a> &'a T: Mul<&'a T, Output = T> {
-        fn is_zero(&self) -> bool {
-            self.ratios[0].is_zero() && self.deg() == 0 
-        }
-
         fn zero() -> Polynomial<T> {
             Polynomial::new(vec![T::zero()])
         }
@@ -437,10 +465,6 @@ pub mod any_pnm{
     impl<T> UnRing for Polynomial<T>
     where T: Field + Clone,
     for <'a> &'a T: Mul<&'a T, Output = T>{
-       fn is_one(&self) -> bool {
-            self == &Polynomial::<T>::one() 
-       } 
-
        fn one() -> Self {
            Polynomial::new(vec![T::one()])
        }
@@ -470,23 +494,4 @@ pub mod any_pnm{
         }
     }
 
-    #[allow(unused_macros)]
-    macro_rules! polynom {
-        ($($rat: expr),*) => {
-            let ratios = vec![$($rat),*];
-
-            Polynomial::new(ratios)
-        };
-
-        ($val:expr ; $idx:expr) => {
-            Polynomial::new_monomial($val, $idx)
-        }
-    }
-
-    #[allow(unused_macros)]
-    macro_rules! monom {
-        ($val:expr ; $idx:expr) => {
-            Polynomial::new_monomial($val, $idx)
-        };
-    }
 }

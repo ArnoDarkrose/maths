@@ -7,3 +7,5 @@ edition = "2021"
 
 [dependencies]
 tech = {path = "../tech"}
+imaginary = {path = "../imaginary"}
+polynomial = {path = "../polynomial"}

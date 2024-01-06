@@ -2,9 +2,6 @@
 //! 
 //! #This a supportive crate for the math workspaces that contains useful Traits
 
-//TODO
-//I can make users only implement one() and zero() bc is_zero() ans is_one() can for sure be provided automatically
-
 use std::ops::{Add, Sub, Div, Mul, Neg, AddAssign, SubAssign, DivAssign, MulAssign};
 
 /// A macro for implementing traits
@@ -13,10 +10,6 @@ macro_rules! implTrait {
     (Ring for $($typ:ty),*) => {
         $(
             impl Ring for $typ {
-                fn is_zero(&self) -> bool {
-                    self == &(0 as $typ)
-                }
-
                 fn zero () -> $typ {
                     0 as $typ
                 }
@@ -27,10 +20,6 @@ macro_rules! implTrait {
     (UnRing for $($typ: ty),*) => {
         $(
             impl UnRing for $typ {
-                fn is_one(&self) -> bool {
-                    self == &(1 as $typ)
-                }
-            
                 fn one () -> $typ {
                     1 as $typ
                 }
@@ -71,7 +60,9 @@ pub trait Ring
 where Self: Add<Self, Output = Self> + Sub <Self, Output = Self> + Mul<Self, Output = Self> +
 AddAssign<Self> + SubAssign<Self> + MulAssign<Self> + ComAdd + AssAdd + PartialEq + Sized
 {
-    fn is_zero(&self) -> bool;
+    fn is_zero(&self) -> bool {
+        self == &Self::zero()
+    }
     fn zero() -> Self;
 }
 
@@ -79,7 +70,9 @@ implTrait!(Ring for f32, f64, i8, i16, i32, i64, i128);
 
 /// Describes a ring with one
 pub trait UnRing: Ring {
-    fn is_one(&self) -> bool;
+    fn is_one(&self) -> bool {
+        self == &Self::one()
+    }
     fn one() -> Self;
 }
 
@@ -118,8 +111,24 @@ pub trait Meta{
     ///Returns the full name of T as a String
     fn name () -> String;
 
+    //TODO i want to make it the way that i can check primitive values if they are close to overflow and if yes -
+    //pass it further to the type they are stored in so that it can also be counted as close to overflow and pass this data further
+    //this all is for the system that allows me not to scan every type to know if it is close to overflow
+    //maybe every value should hold the pointer to the var that they are stored in. 
+    //This will allow me to start a sequence of events that would recursively mark all needed vars as close to overflow
+    //on the other hand checking primitive types for overflow after every operation may be slow
+    //The solution - to make every operation through checked_ or overflowing_ 
+    //Sounds like a lot of work to rewrite the whole library 
+
     //TODO
     //I have an idea to add method that returns the vec that contains struct fields
 } 
 
 implTrait!(Meta for (f32; "f32"), (f64; "f64"), (i8; "i8"), (i16; "i16"), (i32; "i32"), (i64; "i64"), (i128; "i128"));
+
+
+///Trait for implementing the Euclidian algorithm for finding the greatest common dividor
+pub trait Gcd 
+where Self: Sized{
+    fn gcd(&self, rhs: &Self) -> Self;
+}

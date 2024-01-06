@@ -103,8 +103,8 @@ pub mod imgn {
 
     impl SubAssign for Imaginary {
         fn sub_assign(&mut self, rhs: Self) {
-            self.real += rhs.real;
-            self.imaginary += rhs.imaginary;
+            self.real -= rhs.real;
+            self.imaginary -= rhs.imaginary;
         }
     }
 
@@ -168,26 +168,65 @@ pub mod imgn {
         }
     }
 
+    impl Mul for &Imaginary {
+        type Output = Imaginary;
+
+        fn mul(self, rhs: Self) -> Self::Output {
+            let s_r = self.real;
+            let s_i = self.imaginary;
+
+            let r_r = rhs.real;
+            let r_i = rhs.imaginary;
+
+            Imaginary {real: s_r * r_r - s_i * r_i, imaginary: s_r * r_i + s_i * r_r}
+        }
+    }
+
+    impl Div for &Imaginary {
+        type Output = Imaginary;
+
+        fn div(self, rhs: Self) -> Self::Output {
+            let s_r = self.real;
+            let s_i = self.imaginary;
+
+            let r_r = rhs.real;
+            let r_i = rhs.imaginary;
+
+
+            let denominator = r_r * r_r + r_i * r_i;
+
+            Imaginary {real: (s_r * r_r + s_i * r_i)/denominator, imaginary: (s_i * r_r - s_r * r_i)/denominator}
+        }
+    }
+
+    impl Add for &Imaginary {
+        type Output = Imaginary;
+
+        fn add(self, rhs: Self) -> Self::Output {
+            Imaginary {real: self.real + rhs.real, imaginary: self.imaginary + rhs.imaginary}
+        }
+    }
+
+    impl Sub for &Imaginary {
+        type Output = Imaginary;
+
+        fn sub(self, rhs: Self) -> Self::Output {
+            Imaginary {real: self.real - rhs.real, imaginary: self.imaginary - rhs.imaginary}
+        }
+    }
+
     impl AssAdd for Imaginary {}
     impl ComAdd for Imaginary {}
     impl AssMul for Imaginary {}
     impl ComMul for Imaginary {}
 
     impl Ring for Imaginary {
-        fn is_zero(&self) -> bool {
-            self == &Imaginary::zero()
-        }
-
         fn zero() -> Imaginary {
             Imaginary {real: 0.0, imaginary: 0.0}
         }
     }
 
     impl UnRing for Imaginary {
-        fn is_one(&self) -> bool {
-            self == &Imaginary::one()
-        }
-
         fn one() -> Imaginary {
             Imaginary {real: 1.0, imaginary: 0.0}
         }
@@ -205,5 +244,8 @@ pub mod imgn {
             "Imaginary".to_string()
         }
     }
+
+    //TODO
+    //impl Gcd
 }
 
