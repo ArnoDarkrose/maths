@@ -1,7 +1,6 @@
 //TODO
 //create the Rational struct
 
-
 #[macro_use]
 pub mod fract {
     use tech::{IntegralDomain, Meta, AssAdd, AssMul, ComAdd, ComMul, Ring, UnRing, Field, Gcd};
