@@ -1,5 +1,5 @@
 pub mod imgn {
-    use tech::Field;
+    use tech::{AssAdd, AssMul, ComAdd, ComMul, Ring, UnRing, IntegralDomain, Field, Meta};
     use std::{
         fmt::Display,
         ops::{Add, Sub, Mul, Div, AddAssign, SubAssign, MulAssign, DivAssign, Neg}
@@ -21,7 +21,7 @@ pub mod imgn {
         }
     }
     
-    #[derive(Debug, PartialEq, Clone)]
+    #[derive(Debug, PartialEq, Clone, Copy)]
     pub struct Imaginary {
         real: f64,
         imaginary: f64,
@@ -103,8 +103,8 @@ pub mod imgn {
 
     impl SubAssign for Imaginary {
         fn sub_assign(&mut self, rhs: Self) {
-            self.real += rhs.real;
-            self.imaginary += rhs.imaginary;
+            self.real -= rhs.real;
+            self.imaginary -= rhs.imaginary;
         }
     }
 
@@ -168,31 +168,84 @@ pub mod imgn {
         }
     }
 
-    impl Field for Imaginary {
-        const ONE: Self = Imaginary {real: 1.0, imaginary: 0.0};
-        const ZERO: Self = Imaginary {real: 0.0, imaginary: 0.0};
+    impl Mul for &Imaginary {
+        type Output = Imaginary;
 
-        fn is_one(&self) -> bool {
-            self == &Imaginary::ONE
-        }
+        fn mul(self, rhs: Self) -> Self::Output {
+            let s_r = self.real;
+            let s_i = self.imaginary;
 
-        fn is_zero(&self) -> bool {
-            self == &Imaginary::ZERO
-        }
-    }
-}
+            let r_r = rhs.real;
+            let r_i = rhs.imaginary;
 
-#[cfg(test)]
-mod test {
-    use crate::imgn::*;
-    #[test]
-    fn test_root() {
-        let a = Imaginary::new(0.0, -1.0);
-
-        let vec = a.root(3);
-
-        for i in vec.iter() {
-            print!("{i} ");
+            Imaginary {real: s_r * r_r - s_i * r_i, imaginary: s_r * r_i + s_i * r_r}
         }
     }
+
+    impl Div for &Imaginary {
+        type Output = Imaginary;
+
+        fn div(self, rhs: Self) -> Self::Output {
+            let s_r = self.real;
+            let s_i = self.imaginary;
+
+            let r_r = rhs.real;
+            let r_i = rhs.imaginary;
+
+
+            let denominator = r_r * r_r + r_i * r_i;
+
+            Imaginary {real: (s_r * r_r + s_i * r_i)/denominator, imaginary: (s_i * r_r - s_r * r_i)/denominator}
+        }
+    }
+
+    impl Add for &Imaginary {
+        type Output = Imaginary;
+
+        fn add(self, rhs: Self) -> Self::Output {
+            Imaginary {real: self.real + rhs.real, imaginary: self.imaginary + rhs.imaginary}
+        }
+    }
+
+    impl Sub for &Imaginary {
+        type Output = Imaginary;
+
+        fn sub(self, rhs: Self) -> Self::Output {
+            Imaginary {real: self.real - rhs.real, imaginary: self.imaginary - rhs.imaginary}
+        }
+    }
+
+    impl AssAdd for Imaginary {}
+    impl ComAdd for Imaginary {}
+    impl AssMul for Imaginary {}
+    impl ComMul for Imaginary {}
+
+    impl Ring for Imaginary {
+        fn zero() -> Imaginary {
+            Imaginary {real: 0.0, imaginary: 0.0}
+        }
+    }
+
+    impl UnRing for Imaginary {
+        fn one() -> Imaginary {
+            Imaginary {real: 1.0, imaginary: 0.0}
+        }
+    }
+
+    impl IntegralDomain for Imaginary {}
+    impl Field for Imaginary {}
+
+    impl Meta for Imaginary {
+        fn non_zero () -> Self {
+            Imaginary::one()
+        }
+
+        fn name () -> String {
+            "Imaginary".to_string()
+        }
+    }
+
+    //TODO
+    //impl Gcd
 }
+

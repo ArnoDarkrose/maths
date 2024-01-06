@@ -3,6 +3,15 @@
 version = 3
 
 [[package]]
+name = "fraction"
+version = "0.1.0"
+dependencies = [
+ "imaginary",
+ "polynomial",
+ "tech",
+]
+
+[[package]]
 name = "imaginary"
 version = "0.1.0"
 dependencies = [

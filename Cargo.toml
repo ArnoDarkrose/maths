@@ -5,4 +5,5 @@ members = [
     "polynomial",
     "tech",
     "imaginary",
+    "fraction",
 ]
