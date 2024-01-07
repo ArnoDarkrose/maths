@@ -1,9 +1,6 @@
-[workspace]
-resolver = "2"
+[package]
+name = "maths"
+version = "0.1.0"
+edition = "2021"
 
-members = [
-    "polynomial",
-    "tech",
-    "imaginary",
-    "fraction",
-]
+[dependencies]
