@@ -6,3 +6,6 @@ use crate::primitives::checked::*;
 mod tech {
     use std::ops::{Add, Sub, Div, Mul, Neg, AddAssign, SubAssign, DivAssign, MulAssign};
 }
+
+//TODO when rewriting Polynomial make it contain array so that i can make some funcs const and for some other benefits
+//To do that i can remove Assign operators as they seem strange for polynoms anyway
