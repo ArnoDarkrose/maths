@@ -1,12 +1,9 @@
-//! # Maths is the crate for solving varios maths problems
+//! #Maths is the crate for solving varios maths problems
+mod primitives;
 
-///Contains variations of std primitives designed for special purposes like overflow checks
-pub mod primitives;
-pub mod fraction;
-
-pub use crate::primitives::checked::*;
+use crate::primitives::checked::*;
 ///This the main mod that primarily contains traits that the whole crate depends on
-pub mod tech {
+mod tech {
     use std::ops::{Add, Sub, Div, Mul, Neg, AddAssign, SubAssign, DivAssign, MulAssign};
 }
 
