@@ -1,12 +1,12 @@
+
 //! Provides the functionality for overflow checked computations that are very important for the whole crate
 //TODO implement ref methods
 //TODO rewrite so that i could concatanate method name with checked_ to avoid being too verbose
-pub mod checked {
-    use std::ops::{Add, Mul, Sub, Div, Rem, Neg, Shl, Shr, BitAnd, BitOr, BitXor, Not};
+use std::ops::{Add, Mul, Sub, Div, Rem, Neg, Shl, Shr, BitAnd, BitOr, BitXor, Not};
 
-    pub trait IntoChecked <U> {
-        fn safe (self) -> U;
-    }
+pub trait IntoChecked <U> {
+    fn safe (self) -> U;
+}
 
 macro_rules! impl_ops {
     (shift - $typ:ty, $name:ident: $(($op:ident, $fn_name:ident, $meth_name:ident));*) => {
@@ -118,11 +118,15 @@ macro_rules! implFormatTrait {
     };
 }
 
-    macro_rules! define {
-        ($($typ:ty, $name:ident, $new_macro:ident);*) => {
-            $(
-                #[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Hash, PartialOrd, Ord)]
-                pub struct $name ($typ);
+macro_rules! define {
+    ($($typ:ty, $name:ident);*) => {
+        $(
+            ///Main struct for working with checked primitives. 
+            /// It is very close to std primitives in its functionality
+            #[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Hash, PartialOrd, Ord)]
+            pub struct $name ($typ);
+
+            impl crate::tech::Checked for $name {}
 
             impl $name {
                 #[allow(dead_code)]
@@ -229,14 +233,14 @@ macro_rules! implFormatTrait {
     };
 }
 
-    macro_rules! define_unsigned {
-        ($($typ:ty, $name:ident);*) => {
-            $(
-                impl $name {
-                    #[allow(dead_code)]
-                    pub const fn div_ceil(self, rhs: Self) -> Self {
-                        Self(self.0.div_ceil(rhs.0))
-                    }
+macro_rules! define_unsigned {
+    ($($typ:ty, $name:ident);*) => {
+        $(
+            impl $name {
+                #[allow(dead_code)]
+                pub const fn div_ceil(self, rhs: Self) -> Self {
+                    Self(self.0.div_ceil(rhs.0))
+                }
 
                 pub const fn next_multiple_of(self, rhs: Self) -> Option<Self> {
                     if let Some(val) = self.0.checked_next_multiple_of(rhs.0) {
@@ -266,14 +270,14 @@ macro_rules! implFormatTrait {
     };
 }
 
-    macro_rules! define_signed {
-        ($($typ:ty, $name:ident - unsigned: $utyp:ty, $uname:ident);*) => {
-           $(
-                impl $name {
-                    #[allow(dead_code)]
-                    pub const fn is_positive(self) -> bool {
-                        self.0.is_positive()
-                    }
+macro_rules! define_signed {
+    ($($typ:ty, $name:ident - unsigned: $utyp:ty, $uname:ident);*) => {
+        $(
+            impl $name {
+                #[allow(dead_code)]
+                pub const fn is_positive(self) -> bool {
+                    self.0.is_positive()
+                }
 
                 #[allow(dead_code)]
                 pub const fn is_negative(self) -> bool {
@@ -288,42 +292,42 @@ macro_rules! implFormatTrait {
     };
 }
 
-    macro_rules! defineFrom {
-        ($($typ:ty, $name:ident: ($($from_typ:ty, $from_name:ident);*));*) =>  {
+macro_rules! defineFromInt {
+    ($($typ:ty, $name:ident: ($($from_typ:ty, $from_name:ident);*));*) =>  {
+        $(
             $(
-                $(
-                    impl From<$from_name> for $name {
-                        fn from(value: $from_name) -> Self {
-                            Self(value.0 as $typ)
-                        }
+                impl From<$from_name> for $name {
+                    fn from(value: $from_name) -> Self {
+                        Self(value.0 as $typ)
                     }
+                }
 
-                    impl From<$from_typ> for $name { fn from(value: $from_typ) -> Self { Self(value as $typ) } }
-                )*
+                impl From<$from_typ> for $name { fn from(value: $from_typ) -> Self { Self(value as $typ) } }
             )*
-        }
+        )*
     }
+}
 
-    macro_rules! defineDirectlyFrom {
-        ($($typ: ty, $name:ident: ($($directly_from:ty),*));*) => {
-           $(
-                $(
-                    impl From<$directly_from> for $name {
-                        fn from(value: $directly_from) -> Self {
-                            Self(<$typ>::from(value))
-                        }
-                    }
-                )*
-           )*
-        };
-    }
-
-    macro_rules! defineTryFromChecked {
-        ($($typ:ty, $name:ident: $(($from_name:ident, $from_typ:ty)),*);*) => {
+macro_rules! defineFrom {
+    ($($typ: ty, $name:ident: ($($directly_from:ty),*));*) => {
+        $(
             $(
-                $(
-                    impl TryFrom<$from_name> for $name {
-                        type Error = <$typ as TryFrom<$from_typ>>::Error;
+                impl From<$directly_from> for $name {
+                    fn from(value: $directly_from) -> Self {
+                        Self(<$typ>::from(value))
+                    }
+                }
+            )*
+        )*
+    };
+}
+
+macro_rules! defineTryFromChecked {
+    ($($typ:ty, $name:ident: $(($from_name:ident, $from_typ:ty)),*);*) => {
+        $(
+            $(
+                impl TryFrom<$from_name> for $name {
+                    type Error = <$typ as TryFrom<$from_typ>>::Error;
 
                     fn try_from(u: $from_name) -> Result<$name, Self::Error> {
                         match <$typ>::try_from(u.0) {
@@ -337,12 +341,12 @@ macro_rules! implFormatTrait {
     }
 }
 
-    macro_rules! defineTryFromInt {
-        ($($typ:ty, $name:ident: $($from_typ:ty),*);*) => {
+macro_rules! defineTryFromInt {
+    ($($typ:ty, $name:ident: $($from_typ:ty),*);*) => {
+        $(
             $(
-                $(
-                    impl TryFrom<$from_typ> for $name {
-                        type Error = <$typ as TryFrom<$from_typ>>::Error;
+                impl TryFrom<$from_typ> for $name {
+                    type Error = <$typ as TryFrom<$from_typ>>::Error;
 
                     fn try_from(u: $from_typ) -> Result<$name, Self::Error> {
                         match <$typ>::try_from(u) {
@@ -356,66 +360,65 @@ macro_rules! implFormatTrait {
     }
 }
 
-    define!(
-        u32, CheckedU32, s_u32; 
-        i8, CheckedI8, s_i8; 
-        i16, CheckedI16, s_i16; 
-        i32, CheckedI32, s_i32; 
-        i64, CheckedI64, s_i64; 
-        i128, CheckedI128, s_i128; 
-        u8, CheckedU8, s_u8; 
-        u16, CheckedU16, s_u16; 
-        u64, CheckedU64, s_u64; 
-        u128, CheckedU128, s_u128;
-        usize, CheckedUsize, s_usize; 
-        isize, CheckedIsize, s_isize
-    );
+define!(
+    u32, CheckedU32; 
+    i8, CheckedI8; 
+    i16, CheckedI16; 
+    i32, CheckedI32; 
+    i64, CheckedI64; 
+    i128, CheckedI128; 
+    u8, CheckedU8; 
+    u16, CheckedU16; 
+    u64, CheckedU64; 
+    u128, CheckedU128;
+    usize, CheckedUsize; 
+    isize, CheckedIsize
+);
 
-    define_unsigned!(
-        u8, CheckedU8; 
-        u16, CheckedU16; 
-        u32, CheckedU32; 
-        u64, CheckedU64; 
-        u128, CheckedU128; 
-        usize, CheckedUsize
-    );
-    define_signed!(
-        i8, CheckedI8 - unsigned: u8, CheckedU8; 
-        i16, CheckedI16 - unsigned: u16, CheckedU16; 
-        i32, CheckedI32 - unsigned: u32, CheckedU32; 
-        i64, CheckedI64 - unsigned: u64, CheckedU64; 
-        i128, CheckedI128 - unsigned: u128, CheckedU128; 
-        isize, CheckedIsize - unsigned: usize, CheckedUsize
-    );
-    
-    defineFrom!(
-        u16, CheckedU16: (u8, CheckedU8);
-        i16, CheckedI16: (i8, CheckedI8);
-        u32, CheckedU32: (u8, CheckedU8; u16, CheckedU16);
-        i32, CheckedI32: (i8, CheckedI8; i16, CheckedI16);
-        u64, CheckedU64: (u8, CheckedU8; u16, CheckedU16; u32, CheckedU32);
-        i64, CheckedI64: (i8, CheckedI8; i16, CheckedI16; i32, CheckedI32);
-        u128, CheckedU128: (u8, CheckedU8; u16, CheckedU16; u32, CheckedU32; u64, CheckedU64);
-        i128, CheckedI128: (i8, CheckedI8; i16, CheckedI16; i32, CheckedI32; i64, CheckedI64);
-        usize, CheckedUsize: (u8, CheckedU8; u16, CheckedU16);
-        isize, CheckedIsize: (i8, CheckedI8; u8, CheckedU8; i16, CheckedI16)
-    );
+define_unsigned!(
+    u8, CheckedU8; 
+    u16, CheckedU16; 
+    u32, CheckedU32; 
+    u64, CheckedU64; 
+    u128, CheckedU128; 
+    usize, CheckedUsize
+);
+define_signed!(
+    i8, CheckedI8 - unsigned: u8, CheckedU8; 
+    i16, CheckedI16 - unsigned: u16, CheckedU16; 
+    i32, CheckedI32 - unsigned: u32, CheckedU32; 
+    i64, CheckedI64 - unsigned: u64, CheckedU64; 
+    i128, CheckedI128 - unsigned: u128, CheckedU128; 
+    isize, CheckedIsize - unsigned: usize, CheckedUsize
+);
 
-    //the name of the macro may be confusing but it's just ordinary From implementations
-    defineDirectlyFrom!(
-        u8, CheckedU8: (std::num::NonZeroU8, bool);
-        i8, CheckedI8: (std::num::NonZeroI8, bool);
-        u16, CheckedU16: (std::num::NonZeroU16, bool);
-        i16, CheckedI16: (std::num::NonZeroI16, bool);
-        u32, CheckedU32: (std::num::NonZeroU32, bool, std::net::Ipv4Addr, char);
-        i32, CheckedI32: (std::num::NonZeroI32, bool);
-        u64, CheckedU64: (std::num::NonZeroU64, bool, char);
-        i64, CheckedI64: (std::num::NonZeroI64, bool);
-        u128, CheckedU128: (std::num::NonZeroU128, bool, std::net::Ipv6Addr, char);
-        i128, CheckedI128: (std::num::NonZeroI128, bool);
-        usize, CheckedUsize: (std::num::NonZeroUsize, bool);
-        isize, CheckedIsize: (std::num::NonZeroIsize, bool)
-    );
+defineFromInt!(
+    u16, CheckedU16: (u8, CheckedU8);
+    i16, CheckedI16: (i8, CheckedI8);
+    u32, CheckedU32: (u8, CheckedU8; u16, CheckedU16);
+    i32, CheckedI32: (i8, CheckedI8; i16, CheckedI16);
+    u64, CheckedU64: (u8, CheckedU8; u16, CheckedU16; u32, CheckedU32);
+    i64, CheckedI64: (i8, CheckedI8; i16, CheckedI16; i32, CheckedI32);
+    u128, CheckedU128: (u8, CheckedU8; u16, CheckedU16; u32, CheckedU32; u64, CheckedU64);
+    i128, CheckedI128: (i8, CheckedI8; i16, CheckedI16; i32, CheckedI32; i64, CheckedI64);
+    usize, CheckedUsize: (u8, CheckedU8; u16, CheckedU16);
+    isize, CheckedIsize: (i8, CheckedI8; u8, CheckedU8; i16, CheckedI16)
+);
+
+defineFrom!(
+    u8, CheckedU8: (std::num::NonZeroU8, bool);
+    i8, CheckedI8: (std::num::NonZeroI8, bool);
+    u16, CheckedU16: (std::num::NonZeroU16, bool);
+    i16, CheckedI16: (std::num::NonZeroI16, bool);
+    u32, CheckedU32: (std::num::NonZeroU32, bool, std::net::Ipv4Addr, char);
+    i32, CheckedI32: (std::num::NonZeroI32, bool);
+    u64, CheckedU64: (std::num::NonZeroU64, bool, char);
+    i64, CheckedI64: (std::num::NonZeroI64, bool);
+    u128, CheckedU128: (std::num::NonZeroU128, bool, std::net::Ipv6Addr, char);
+    i128, CheckedI128: (std::num::NonZeroI128, bool);
+    usize, CheckedUsize: (std::num::NonZeroUsize, bool);
+    isize, CheckedIsize: (std::num::NonZeroIsize, bool)
+);
 
 defineTryFromInt!(
     u8, CheckedU8: u8, i8, u16, i16, u32, i32, u64, i64, u128, i128, usize, isize;
@@ -491,4 +494,3 @@ defineTryFromChecked!(
         (CheckedI32, i32), (CheckedI64, i64), (CheckedI128, i128),
         (CheckedUsize, usize)
     );
-
