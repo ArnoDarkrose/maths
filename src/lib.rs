@@ -1,6 +1,9 @@
 //! #Maths is the crate for solving varios maths problems
 mod primitives;
-pub use crate::primitives::checked;
+pub use crate::primitives::checked::*;
+
+pub mod fraction;
+
 ///This the main mod that primarily contains traits that the whole crate depends on
 mod tech {
     //Notice that the names of the imported traits are changed
@@ -20,29 +23,40 @@ mod tech {
     pub trait Com<T: Op> {}
     pub trait Ass<T: Op> {}
 
-    pub trait Group<T: Op> where Self: Ass<T>{
+    pub trait Group<T: Op> where Self: Ass<T> + std::cmp::Eq{
         fn neut() -> Self;
     }
 
-    pub trait Abelian<T: Op> where Self: Com<T> {}
-
-    pub trait Ring where Self: 
-        Group<Add> + Abelian<Add> + AddTrait<Self, Output = Self> + MulTrait<Self, Output = Self> +
-        SubTrait<Self, Output = Self> + Neg<Output = Self> + Sized {}
-
-    pub trait UnRing where Self: Ring {
-        fn one() -> Self;
-    }
-
-    pub trait IntegralDomain where Self: Ring + Com<Mul> + Ass<Mul> {} 
-
-    pub trait Field where Self: UnRing + IntegralDomain + DivTrait<Self, Output = Self> {
+    pub trait AddGroup where Self: 
+        Group<Add> + AddTrait<Self, Output = Self> + SubTrait<Self, Output = Self> + Neg<Output = Self> + Sized{
         fn zero() -> Self {
             <Self as Group<Add>>::neut()
         }
     }
 
-    //TODO Meta, Gcd ?
+    pub trait MulGroup where Self: 
+        Group<Mul> + MulTrait<Self, Output = Self> + DivTrait<Self, Output = Self> + Sized{
+        fn one() -> Self {
+            <Self as Group<Mul>>::neut()
+        }
+    }
+
+    pub trait Abelian<T: Op> where Self: Com<T> {}
+
+    pub trait Ring where Self:
+        AddGroup + Abelian<Add> + MulTrait<Self, Output = Self> {}
+
+    pub trait IntegralDomain where Self: 
+        Ring + Com<Mul> + Ass<Mul> {} 
+
+    pub trait Field where Self: 
+        IntegralDomain + MulGroup {}
+
+    pub trait Meta {
+        fn non_zero() ->  Self;
+        fn name() -> String;
+    }
+    //TODO Gcd ?
 }
 
 //TODO when rewriting Polynomial make it contain array so that i can make some funcs const and for some other benefits
