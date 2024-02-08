@@ -1,8 +1,11 @@
 //TODO implement ref methods
 //TODO rewrite so that i could concatanate method name with checked_ to avoid being too verbose
+
+///The module for working with checked primitives
 pub mod checked {
     use std::ops::{Add, Mul, Sub, Div, Rem, Neg, Shl, Shr, BitAnd, BitOr, BitXor, Not};
 
+    ///Trait for converting primitive ints into Checked
     pub trait IntoChecked <U> {
         fn safe (self) -> U;
     }
@@ -117,10 +120,12 @@ pub mod checked {
         };
     }
 
+    //To define a Checked primitive the name of the original type and the name of the Wrapper have to be passed as arguments to define!
     macro_rules! define {
-        ($($typ:ty, $name:ident, $new_macro:ident);*) => {
+        ($($typ:ty, $name:ident);*) => {
             $(
                 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Hash, PartialOrd, Ord)]
+                ///The struct that is very similar to primitive ints but replaces all possible operations with their checked analogue
                 pub struct $name ($typ);
 
                 impl $name {
@@ -228,6 +233,7 @@ pub mod checked {
         };
     }
 
+    //The same as for define!
     macro_rules! define_unsigned {
         ($($typ:ty, $name:ident);*) => {
             $(
@@ -265,6 +271,7 @@ pub mod checked {
         };
     }
 
+    //The same as for define!
     macro_rules! define_signed {
         ($($typ:ty, $name:ident - unsigned: $utyp:ty, $uname:ident);*) => {
            $(
@@ -287,7 +294,9 @@ pub mod checked {
         };
     }
 
-    macro_rules! defineFrom {
+    //To implement From for the wrapper the original type name, the wrapper type name and same information for the types,
+    //that are desirable to be converted from have to be provided
+    macro_rules! defineFromInt {
         ($($typ:ty, $name:ident: ($($from_typ:ty, $from_name:ident);*));*) =>  {
             $(
                 $(
@@ -297,13 +306,19 @@ pub mod checked {
                         }
                     }
 
-                    impl From<$from_typ> for $name { fn from(value: $from_typ) -> Self { Self(value as $typ) } }
+                    impl From<$from_typ> for $name { 
+                        fn from(value: $from_typ) -> Self {
+                            Self(value as $typ) 
+                        } 
+                    }
                 )*
             )*
         }
     }
 
-    macro_rules! defineDirectlyFrom {
+    //The same as for FromInt except that you only need to pass the desirable type name
+    //This macro is used to implemnt Froms of the types that are not primitive integers
+    macro_rules! defineFrom {
         ($($typ: ty, $name:ident: ($($directly_from:ty),*));*) => {
            $(
                 $(
@@ -317,6 +332,7 @@ pub mod checked {
         };
     }
 
+    //The same as for FromInt
     macro_rules! defineTryFromChecked {
         ($($typ:ty, $name:ident: $(($from_name:ident, $from_typ:ty)),*);*) => {
             $(
@@ -336,6 +352,7 @@ pub mod checked {
         }
     }
 
+    //The same as for FromInt except you don't need to pass the wrapper name for the from type
     macro_rules! defineTryFromInt {
         ($($typ:ty, $name:ident: $($from_typ:ty),*);*) => {
             $(
@@ -356,18 +373,18 @@ pub mod checked {
     }
 
     define!(
-        u32, CheckedU32, s_u32; 
-        i8, CheckedI8, s_i8; 
-        i16, CheckedI16, s_i16; 
-        i32, CheckedI32, s_i32; 
-        i64, CheckedI64, s_i64; 
-        i128, CheckedI128, s_i128; 
-        u8, CheckedU8, s_u8; 
-        u16, CheckedU16, s_u16; 
-        u64, CheckedU64, s_u64; 
-        u128, CheckedU128, s_u128;
-        usize, CheckedUsize, s_usize; 
-        isize, CheckedIsize, s_isize
+        u32, CheckedU32; 
+        i8, CheckedI8; 
+        i16, CheckedI16; 
+        i32, CheckedI32; 
+        i64, CheckedI64; 
+        i128, CheckedI128; 
+        u8, CheckedU8; 
+        u16, CheckedU16; 
+        u64, CheckedU64; 
+        u128, CheckedU128;
+        usize, CheckedUsize; 
+        isize, CheckedIsize
     );
 
     define_unsigned!(
@@ -387,7 +404,7 @@ pub mod checked {
         isize, CheckedIsize - unsigned: usize, CheckedUsize
     );
     
-    defineFrom!(
+    defineFromInt!(
         u16, CheckedU16: (u8, CheckedU8);
         i16, CheckedI16: (i8, CheckedI8);
         u32, CheckedU32: (u8, CheckedU8; u16, CheckedU16);
@@ -400,8 +417,7 @@ pub mod checked {
         isize, CheckedIsize: (i8, CheckedI8; u8, CheckedU8; i16, CheckedI16)
     );
 
-    //the name of the macro may be confusing but it's just ordinary From implementations
-    defineDirectlyFrom!(
+    defineFrom!(
         u8, CheckedU8: (std::num::NonZeroU8, bool);
         i8, CheckedI8: (std::num::NonZeroI8, bool);
         u16, CheckedU16: (std::num::NonZeroU16, bool);
