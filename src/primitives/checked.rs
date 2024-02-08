@@ -118,10 +118,12 @@ pub mod checked {
     }
 
     macro_rules! define {
-        ($($typ:ty, $name:ident, $new_macro:ident);*) => {
+        ($($typ:ty, $name:ident);*) => {
             $(
                 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Hash, PartialOrd, Ord)]
                 pub struct $name ($typ);
+
+                impl crate::tech::Checked for $name {}
 
                 impl $name {
                     #[allow(dead_code)]
@@ -287,7 +289,7 @@ pub mod checked {
         };
     }
 
-    macro_rules! defineFrom {
+    macro_rules! defineFromInt {
         ($($typ:ty, $name:ident: ($($from_typ:ty, $from_name:ident);*));*) =>  {
             $(
                 $(
@@ -303,7 +305,7 @@ pub mod checked {
         }
     }
 
-    macro_rules! defineDirectlyFrom {
+    macro_rules! defineFrom {
         ($($typ: ty, $name:ident: ($($directly_from:ty),*));*) => {
            $(
                 $(
@@ -356,18 +358,18 @@ pub mod checked {
     }
 
     define!(
-        u32, CheckedU32, s_u32; 
-        i8, CheckedI8, s_i8; 
-        i16, CheckedI16, s_i16; 
-        i32, CheckedI32, s_i32; 
-        i64, CheckedI64, s_i64; 
-        i128, CheckedI128, s_i128; 
-        u8, CheckedU8, s_u8; 
-        u16, CheckedU16, s_u16; 
-        u64, CheckedU64, s_u64; 
-        u128, CheckedU128, s_u128;
-        usize, CheckedUsize, s_usize; 
-        isize, CheckedIsize, s_isize
+        u32, CheckedU32; 
+        i8, CheckedI8; 
+        i16, CheckedI16; 
+        i32, CheckedI32; 
+        i64, CheckedI64; 
+        i128, CheckedI128; 
+        u8, CheckedU8; 
+        u16, CheckedU16; 
+        u64, CheckedU64; 
+        u128, CheckedU128;
+        usize, CheckedUsize; 
+        isize, CheckedIsize
     );
 
     define_unsigned!(
@@ -387,7 +389,7 @@ pub mod checked {
         isize, CheckedIsize - unsigned: usize, CheckedUsize
     );
     
-    defineFrom!(
+    defineFromInt!(
         u16, CheckedU16: (u8, CheckedU8);
         i16, CheckedI16: (i8, CheckedI8);
         u32, CheckedU32: (u8, CheckedU8; u16, CheckedU16);
@@ -400,8 +402,7 @@ pub mod checked {
         isize, CheckedIsize: (i8, CheckedI8; u8, CheckedU8; i16, CheckedI16)
     );
 
-    //the name of the macro may be confusing but it's just ordinary From implementations
-    defineDirectlyFrom!(
+    defineFrom!(
         u8, CheckedU8: (std::num::NonZeroU8, bool);
         i8, CheckedI8: (std::num::NonZeroI8, bool);
         u16, CheckedU16: (std::num::NonZeroU16, bool);

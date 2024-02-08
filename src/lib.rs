@@ -6,6 +6,8 @@ mod tech {
     //Notice that the names of the imported traits are changed
     use std::ops::{Add as AddTrait, Sub as SubTrait, Div as DivTrait, Mul as MulTrait, Neg};
 
+    ///Indicates that the type makes overflow checks
+    pub trait Checked {}
     ///Indicates that the struct that implements it can be considered as a representaion of an operation
     pub trait Op {}
 
