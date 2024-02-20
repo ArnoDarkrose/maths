@@ -7,3 +7,5 @@
 **/config
 **/description
 **/HEAD
+**/tests
+testdata.txt

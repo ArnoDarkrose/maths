@@ -1,8 +1,8 @@
 
 //! Provides the functionality for overflow checked computations that are very important for the whole crate
-//TODO implement ref methods
 //TODO rewrite so that i could concatanate method name with checked_ to avoid being too verbose
 use std::ops::{Add, Mul, Sub, Div, Rem, Neg, Shl, Shr, BitAnd, BitOr, BitXor, Not};
+use crate::tech::*;
 
 pub trait IntoChecked <U> {
     fn safe (self) -> U;
@@ -52,6 +52,95 @@ macro_rules! impl_ops {
             }
         )*
     };
+
+    (ref - $typ:ty, $name:ident: $(($op:ident, $fn_name:ident, $meth_name:ident (rhs: $rhs_typ:ty)));*) => {
+        $(
+            impl $op for &$name {
+                type Output = Option<$name>;
+
+                fn $fn_name (self, rhs: &$rhs_typ) -> Self::Output {
+                    if let Some(val) = self.0.$meth_name(rhs.0) {
+                        Some($name(val))
+                    } else {
+                        None
+                    }
+                }
+            }
+        )*
+    };
+
+    
+    (ref mut - $typ:ty, $name:ident: $(($op:ident, $fn_name:ident, $meth_name:ident (rhs: $rhs_typ:ty)));*) => {
+        $(
+            impl $op for &mut $name {
+                type Output = Option<$name>;
+
+                fn $fn_name (self, rhs: &mut $rhs_typ) -> Self::Output {
+                    if let Some(val) = self.0.$meth_name(rhs.0) {
+                        Some($name(val))
+                    } else {
+                        None
+                    }
+                }
+            }
+        )*
+    };
+
+    (ref shift - $typ:ty, $name:ident: $(($op:ident, $fn_name:ident, $meth_name:ident));*) => {
+        $(
+            impl $op<&CheckedU32> for &$name {
+                type Output = Option<$name>;
+
+                fn $fn_name (self, rhs: &CheckedU32) -> Self::Output {
+                    if let Some(val) = self.0.$meth_name(rhs.0) {
+                        Some($name(val))
+                    } else {
+                        None
+                    }
+                }
+            }
+        )*
+    };
+
+    (ref without check - $typ:ty, $name:ident: $(($op:ident, $fn_name:ident($($param:ident: $param_typ:ty),*)));*) => {
+        $(
+            impl $op for &$name {
+                type Output = $name;
+
+                fn $fn_name(self $(, $param: $param_typ)*) -> Self::Output{
+                    $name(self.0.$fn_name($($param.0),*))
+                }
+            }
+        )*
+    };
+
+    (ref mut shift - $typ:ty, $name:ident: $(($op:ident, $fn_name:ident, $meth_name:ident));*) => {
+        $(
+            impl $op<&mut CheckedU32> for &mut $name {
+                type Output = Option<$name>;
+
+                fn $fn_name (self, rhs: &mut CheckedU32) -> Self::Output {
+                    if let Some(val) = self.0.$meth_name(rhs.0) {
+                        Some($name(val))
+                    } else {
+                        None
+                    }
+                }
+            }
+        )*
+    };
+
+    (ref mut without check - $typ:ty, $name:ident: $(($op:ident, $fn_name:ident($($param:ident: $param_typ:ty),*)));*) => {
+        $(
+            impl $op for &mut $name {
+                type Output = $name;
+
+                fn $fn_name(self $(, $param: $param_typ)*) -> Self::Output{
+                    $name(self.0.$fn_name($($param.0),*))
+                }
+            }
+        )*
+    };
 }
 
 macro_rules! impl_method {
@@ -85,7 +174,7 @@ macro_rules! impl_method {
 
     (return [Checked_u8; 4]: self. $(($name:ident($($param_name:ident : $typ:ty),* )));*) => {
         $(
-            //TODO 
+            //TODO unconst map issue
         )*
     };
 
@@ -118,6 +207,28 @@ macro_rules! implFormatTrait {
     };
 }
 
+macro_rules! implTechTraitsUpToCheckRing {
+    ($($typ:ty),*) => {
+        $(
+            plainImpl!($typ: Com<AddOp>, Ass<AddOp>, Com<MulOp>, Ass<MulOp>, Abelian<AddOp>, Checked, CheckRing, CheckAddGroup, CheckIntegralDomain);
+
+            impl Group<AddOp> for $typ {
+                fn neut() -> Self {
+                    Self::try_from(0).unwrap()
+                }
+            }
+        )*
+    };
+}
+
+macro_rules! plainImpl {
+    ($typ:ty: $($trait_name: ident $(<$gen_param: ident>)?),*) => {
+        $(
+            impl $trait_name $(<$gen_param>)? for $typ {}
+        )*
+    };
+}
+
 macro_rules! define {
     ($($typ:ty, $name:ident);*) => {
         $(
@@ -125,8 +236,6 @@ macro_rules! define {
             /// It is very close to std primitives in its functionality
             #[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Hash, PartialOrd, Ord)]
             pub struct $name ($typ);
-
-            impl crate::tech::Checked for $name {}
 
             impl $name {
                 #[allow(dead_code)]
@@ -154,7 +263,6 @@ macro_rules! define {
                     (ilog2, checked_ilog2() -> Option<CheckedU32>); (ilog10, checked_ilog10() -> Option<CheckedU32>)
                 );
 
-                
 
                 pub fn from_str_radix(src: &str, radix: CheckedU32) -> Result<Self, std::num::ParseIntError> {
                     let res = <$typ>::from_str_radix(src, radix.0);
@@ -185,6 +293,16 @@ macro_rules! define {
                     ($typ, from_le_bytes(bytes: [u8; (0 as $typ).to_le_bytes().len()]) -> Self);
                     ($typ, from_ne_bytes(bytes: [u8; (0 as $typ).to_ne_bytes().len()]) -> Self)
                 );
+
+                fn gcd_sign_unsafe(&self, rhs: &Self) -> Option<Self> {
+                    let rem = (self % rhs)?;
+
+                    if rem == Self::try_from(0).unwrap() {
+                        return Some(rhs.clone())
+                    } 
+
+                    rhs.gcd_sign_unsafe(&rem)
+                }
             }
 
             impl IntoChecked<$name> for $typ {
@@ -229,6 +347,55 @@ macro_rules! define {
                 (BitAnd, bitand(rhs: $name)); (BitOr, bitor(rhs: $name)); (BitXor, bitxor(rhs: $name)); (Not, not())
             );
 
+            impl_ops!(ref - $typ, $name:
+                (Add, add, checked_add(rhs: $name)); (Sub, sub, checked_sub(rhs: $name)); (Mul, mul, checked_mul(rhs: $name)); 
+                (Div, div, checked_div(rhs: $name)); (Rem, rem, checked_rem(rhs: $name))
+            );
+
+            impl_ops!(ref without check - $typ, $name:
+                (BitAnd, bitand(rhs: &$name)); (BitOr, bitor(rhs: &$name)); (BitXor, bitxor(rhs: &$name)); (Not, not())
+            );
+
+            impl_ops!(ref shift - $typ, $name: 
+                (Shl, shl, checked_shl); (Shr, shr, checked_shr)
+            );
+
+            impl Neg for &$name {
+                type Output = Option<$name>;
+
+                fn neg(self) -> Self::Output {
+                    if let Some(val) = self.0.checked_neg() {
+                        Some($name(val))
+                    } else {
+                        None
+                    }
+                }
+            }
+
+            impl_ops!(ref mut - $typ, $name: 
+                (Add, add, checked_add(rhs: $name)); (Sub, sub, checked_sub(rhs: $name)); (Mul, mul, checked_mul(rhs: $name)); 
+                (Div, div, checked_div(rhs: $name)); (Rem, rem, checked_rem(rhs: $name))
+            );
+
+            impl_ops!(ref mut shift - $typ, $name:
+                (Shl, shl, checked_shl); (Shr, shr, checked_shr)
+            );
+
+            impl_ops!(ref mut without check - $typ, $name:
+                (BitAnd, bitand(rhs: &mut $name)); (BitOr, bitor(rhs: &mut $name)); (BitXor, bitxor(rhs: &mut $name)); (Not, not())
+            );
+
+            impl Neg for &mut $name {
+                type Output = Option<$name>;
+
+                fn neg(self) -> Self::Output {
+                    if let Some(val) = self.0.checked_neg() {
+                        Some($name(val))
+                    } else {
+                        None
+                    }
+                }
+            }
         )*
     };
 }
@@ -266,6 +433,19 @@ macro_rules! define_unsigned {
                     Self(self.0.abs_diff(other.0))
                 }
             }
+
+            impl Checked for $name{}
+
+            impl Ass<AddOp> for $name {}
+            impl Ass<MulOp> for $name {}
+            impl Com<MulOp> for $name {}
+            impl Com<AddOp> for $name {}
+
+            impl CheckGcd for $name {
+                fn gcd(&self, rhs: &Self) -> Option<Self> {
+                    self.gcd_sign_unsafe(rhs)
+                }
+            }
         )*
     };
 }
@@ -286,6 +466,23 @@ macro_rules! define_signed {
 
                 pub const fn abs_diff(self, other: Self) -> $uname {
                     $uname(self.0.abs_diff(other.0))
+                }
+
+                pub const fn abs(self) -> Option<Self> {
+                    if let Some(val) = self.0.checked_abs() {
+                        Some(Self(val))
+                    } else {
+                        None
+                    }
+                }
+
+            }
+
+            implTechTraitsUpToCheckRing!($name);
+
+            impl CheckGcd for $name {
+                fn gcd(&self, rhs: &Self) -> Option<Self> {
+                    self.abs()?.gcd_sign_unsafe(&rhs.abs()?)
                 }
             }
         )*
@@ -360,6 +557,21 @@ macro_rules! defineTryFromInt {
     }
 }
 
+macro_rules! implMeta {
+    ($($name:ident, $name_str:expr);*) => {
+        $(
+            impl Meta for $name {
+                fn name() -> String {
+                    String::from($name_str)
+                }
+
+                fn non_zero() -> Self {
+                    Self::try_from(1).unwrap()
+                }
+            }
+        )*
+    };
+}
 define!(
     u32, CheckedU32; 
     i8, CheckedI8; 
@@ -494,3 +706,8 @@ defineTryFromChecked!(
         (CheckedI32, i32), (CheckedI64, i64), (CheckedI128, i128),
         (CheckedUsize, usize)
     );
+
+implMeta!(
+    CheckedU8, "CheckedU8"; CheckedU16, "CheckedU16"; CheckedU32, "CheckedU32"; CheckedU64, "CheckedU64"; CheckedU128, "CheckedU128";
+    CheckedI8, "CheckedI8"; CheckedI16, "CheckedI16"; CheckedI32, "CheckedI32"; CheckedI64, "CheckedI64"; CheckedI128, "CheckedI128"
+);
