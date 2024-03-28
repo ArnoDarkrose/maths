@@ -1,3 +1,4 @@
+//TODO implement multuplying and dividing by T
 
 pub mod checked_reducible {
     use crate::tech::*;
@@ -5,23 +6,23 @@ pub mod checked_reducible {
         ops::{Mul, Add, Div, Sub, Neg, Rem}
     };
 
-    pub trait RedBound = CheckIntegralDomain + CheckGcd + Meta where for <'a> &'a Self: 
+    pub trait RdcBound = CheckIntegralDomain + CheckGcd + Meta where for <'a> &'a Self: 
     Add<&'a Self, Output = Option<Self>> + Sub<&'a Self, Output = Option<Self>> + Neg<Output = Option<Self>> + 
     Mul<&'a Self, Output = Option<Self>> + Div<&'a Self, Output = Option<Self>> + Rem<&'a Self, Output = Option<Self>>;
 
     #[derive(Debug, Clone)]
-    pub struct CheckRed <T: RedBound> {
+    pub struct CheckRdc <T: RdcBound> {
         num: T,
         denom: T
     }
 
-    impl<T: RedBound> CheckRed<T> {
-        pub fn new(num: T, denom: T) -> CheckRed<T> {
+    impl<T: RdcBound> CheckRdc<T> {
+        pub fn new(num: T, denom: T) -> CheckRdc<T> {
             if denom.is_zero() {
                 panic!("Zero denominator");
             }
 
-            let mut res = CheckRed{num, denom};
+            let mut res = CheckRdc{num, denom};
             
             res.simplify();
             
@@ -51,26 +52,26 @@ pub mod checked_reducible {
     #[macro_export]
     macro_rules! chrdc {
         ($num:expr, $denom:expr) => {
-            CheckRed::new($num, $denom)
+            CheckRdc::new($num, $denom)
         };
 
 
         ($typ:ty) => {
-            CheckRed::new(<$typ>::non_zero(), <$typ>::non_zero())
+            CheckRdc::new(<$typ>::non_zero(), <$typ>::non_zero())
         };
 
         ($num_denom:expr) => {
-            CheckRed::new($num_denom.0, $num_denom.1)
+            CheckRdc::new($num_denom.0, $num_denom.1)
         }
     }
 
-    impl<T: RedBound> std::default::Default for CheckRed<T> {
+    impl<T: RdcBound> std::default::Default for CheckRdc<T> {
         fn default() -> Self {
-            CheckRed {num: T::non_zero(), denom: T::non_zero()}
+            CheckRdc {num: T::non_zero(), denom: T::non_zero()}
         }
     }
 
-    impl<T: RedBound + Clone> PartialEq for CheckRed<T> {
+    impl<T: RdcBound + Clone> PartialEq for CheckRdc<T> {
         fn eq(&self, other: &Self) -> bool {
             let mut overflowed = false;
 
@@ -110,9 +111,9 @@ pub mod checked_reducible {
         }
     }
 
-    impl<T: RedBound + Clone> Eq for CheckRed<T> {}
+    impl<T: RdcBound + Clone> Eq for CheckRdc<T> {}
 
-    impl<T: RedBound + PartialOrd + Clone> PartialOrd for CheckRed<T> {
+    impl<T: RdcBound + PartialOrd + Clone> PartialOrd for CheckRdc<T> {
         fn partial_cmp(&self, other: &Self) -> Option<std::cmp::Ordering> {
             let mut overflowed = false;
 
@@ -146,8 +147,8 @@ pub mod checked_reducible {
         }
     }
 
-    impl<T: RedBound> Mul<Self> for &mut CheckRed<T> {
-        type Output = Option<CheckRed<T>>;
+    impl<T: RdcBound> Mul<Self> for &mut CheckRdc<T> {
+        type Output = Option<CheckRdc<T>>;
 
         fn mul(self, rhs: Self) -> Self::Output {
             let mut overflowed = false;
@@ -163,7 +164,7 @@ pub mod checked_reducible {
             };
 
             if !overflowed {
-                return Some(CheckRed {num, denom})
+                return Some(CheckRdc {num, denom})
             }
         
             self.simplify();
@@ -182,12 +183,12 @@ pub mod checked_reducible {
 
             let denom = (self.denom() * rhs.denom())?;
 
-            Some(CheckRed {num, denom})
+            Some(CheckRdc {num, denom})
         }
     }
 
-    impl<T: RedBound + Clone> Mul<Self> for &CheckRed<T> {
-        type Output = Option<CheckRed<T>>;
+    impl<T: RdcBound + Clone> Mul<Self> for &CheckRdc<T> {
+        type Output = Option<CheckRdc<T>>;
 
         fn mul(self, rhs: Self) -> Self::Output {
             let mut overflowed = false;
@@ -203,7 +204,7 @@ pub mod checked_reducible {
             };
 
             if !overflowed {
-                return Some(CheckRed {num, denom})
+                return Some(CheckRdc {num, denom})
             }
 
             let mut new_self = self.clone();
@@ -225,12 +226,12 @@ pub mod checked_reducible {
 
             let denom = (new_self.denom() * rhs.denom())?;
 
-            Some(CheckRed {num, denom})
+            Some(CheckRdc {num, denom})
         }
     }
 
-    impl<T: RedBound> Add<Self> for &mut CheckRed<T> {
-        type Output = Option<CheckRed<T>>;
+    impl<T: RdcBound> Add<Self> for &mut CheckRdc<T> {
+        type Output = Option<CheckRdc<T>>;
 
         fn add(self, rhs: Self) -> Self::Output {
             let mut already_simplified = false;
@@ -342,12 +343,12 @@ pub mod checked_reducible {
                 }
             };
 
-            Some(CheckRed {num: new_num, denom: new_denom})
+            Some(CheckRdc {num: new_num, denom: new_denom})
         }
     }
 
-    impl<T: RedBound + Clone> Add<Self> for &CheckRed<T> {
-        type Output = Option<CheckRed<T>>;
+    impl<T: RdcBound + Clone> Add<Self> for &CheckRdc<T> {
+        type Output = Option<CheckRdc<T>>;
 
         fn add(self, rhs: Self) -> Self::Output {
             let mut new_self = self.clone();
@@ -357,8 +358,8 @@ pub mod checked_reducible {
         }
     }
 
-    impl<T: RedBound> Sub<Self> for &mut CheckRed<T> {
-        type Output = Option<CheckRed<T>>;
+    impl<T: RdcBound> Sub<Self> for &mut CheckRdc<T> {
+        type Output = Option<CheckRdc<T>>;
 
         fn sub(self, rhs: Self) -> Self::Output {
             let mut already_simplified = false;
@@ -470,12 +471,12 @@ pub mod checked_reducible {
                 }
             };
 
-            Some(CheckRed {num: new_num, denom: new_denom})
+            Some(CheckRdc {num: new_num, denom: new_denom})
         }
     }
 
-    impl<T: RedBound + Clone> Sub<Self> for &CheckRed<T> {
-        type Output = Option<CheckRed<T>>;
+    impl<T: RdcBound + Clone> Sub<Self> for &CheckRdc<T> {
+        type Output = Option<CheckRdc<T>>;
 
         fn sub(self, rhs: Self) -> Self::Output {
             let mut new_self = self.clone();
@@ -485,8 +486,8 @@ pub mod checked_reducible {
         }
     }
 
-    impl<T: RedBound> Div<Self> for &mut CheckRed<T> {
-        type Output = Option<CheckRed<T>>;
+    impl<T: RdcBound> Div<Self> for &mut CheckRdc<T> {
+        type Output = Option<CheckRdc<T>>;
 
         fn div(self, rhs: Self) -> Self::Output {
             if rhs.num.is_zero() {
@@ -506,7 +507,7 @@ pub mod checked_reducible {
             };
 
             if !overflowed {
-                return Some(CheckRed {num, denom})
+                return Some(CheckRdc {num, denom})
             }
         
             self.simplify();
@@ -525,12 +526,12 @@ pub mod checked_reducible {
 
             let denom = (self.denom() * rhs.num())?;
 
-            Some(CheckRed {num, denom})
+            Some(CheckRdc {num, denom})
         }
     }
 
-    impl<T: RedBound + Clone> Div<Self> for &CheckRed<T> {
-        type Output = Option<CheckRed<T>>;
+    impl<T: RdcBound + Clone> Div<Self> for &CheckRdc<T> {
+        type Output = Option<CheckRdc<T>>;
 
         fn div(self, rhs: Self) -> Self::Output {
             if rhs.num.is_zero() {
@@ -550,7 +551,7 @@ pub mod checked_reducible {
             };
 
             if !overflowed {
-                return Some(CheckRed {num, denom})
+                return Some(CheckRdc {num, denom})
             }
         
             let mut new_self = self.clone();
@@ -572,76 +573,76 @@ pub mod checked_reducible {
 
             let denom = (new_self.denom() * rhs.num())?;
 
-            Some(CheckRed {num, denom})
+            Some(CheckRdc {num, denom})
         }
     }
 
-    impl<T: RedBound> Neg for &mut CheckRed<T> {
-        type Output = Option<CheckRed<T>>;
+    impl<T: RdcBound> Neg for &mut CheckRdc<T> {
+        type Output = Option<CheckRdc<T>>;
 
         fn neg(self) -> Self::Output {
-            &mut CheckRed {num: T::zero(), denom: T::non_zero()} - self
+            &mut CheckRdc {num: T::zero(), denom: T::non_zero()} - self
         }
     }
 
-    impl<T: RedBound + Clone> Neg for &CheckRed<T> {
-        type Output = Option<CheckRed<T>>;
+    impl<T: RdcBound + Clone> Neg for &CheckRdc<T> {
+        type Output = Option<CheckRdc<T>>;
 
         fn neg(self) -> Self::Output {
-            &CheckRed {num: T::zero(), denom: T::non_zero()} - self
+            &CheckRdc {num: T::zero(), denom: T::non_zero()} - self
         }
     }
 
-    impl<T: RedBound> Meta for CheckRed<T> {
+    impl<T: RdcBound> Meta for CheckRdc<T> {
         fn name() -> String {
-            format!("CheckRed<{}>", T::name())
+            format!("CheckRdc<{}>", T::name())
         }
 
         fn non_zero() ->  Self {
-            CheckRed {num: T::non_zero(), denom: T::non_zero()}
+            CheckRdc {num: T::non_zero(), denom: T::non_zero()}
         }
     }
 
-    impl<T: RedBound> Ass<AddOp> for CheckRed<T> {}
-    impl<T: RedBound> Ass<MulOp> for CheckRed<T> {}
-    impl<T: RedBound> Com<AddOp> for CheckRed<T> {}
-    impl<T: RedBound> Com<MulOp> for CheckRed<T> {}
+    impl<T: RdcBound> Ass<AddOp> for CheckRdc<T> {}
+    impl<T: RdcBound> Ass<MulOp> for CheckRdc<T> {}
+    impl<T: RdcBound> Com<AddOp> for CheckRdc<T> {}
+    impl<T: RdcBound> Com<MulOp> for CheckRdc<T> {}
 
-    impl<T: RedBound + Clone> Group<AddOp> for CheckRed<T> {
+    impl<T: RdcBound + Clone> Group<AddOp> for CheckRdc<T> {
         fn neut() -> Self {
-            CheckRed {num: T::zero(), denom: T::non_zero()}
+            CheckRdc {num: T::zero(), denom: T::non_zero()}
         }
     }
 
-    impl<T: RedBound + Clone> Group<MulOp> for CheckRed<T> {
+    impl<T: RdcBound + Clone> Group<MulOp> for CheckRdc<T> {
         fn neut() -> Self {
-            CheckRed {num: T::non_zero(), denom:T::non_zero()}
+            CheckRdc {num: T::non_zero(), denom:T::non_zero()}
         }
     }
 
-    impl<T: RedBound> Checked for CheckRed<T> {}
+    impl<T: RdcBound> Checked for CheckRdc<T> {}
 
-    impl<T: RedBound + Clone> CheckAddGroup for CheckRed<T> {
+    impl<T: RdcBound + Clone> CheckAddGroup for CheckRdc<T> {
         fn is_zero(&self) -> bool {
             self.num.is_zero()
         }
     }
-    impl<T: RedBound + Clone> CheckMulGroup for CheckRed<T> {
+    impl<T: RdcBound + Clone> CheckMulGroup for CheckRdc<T> {
         fn is_one(&self) -> bool {
             self.num == self.denom
         }
     }
 
-    impl<T: RedBound + Clone> Abelian<AddOp> for CheckRed<T> {}
-    impl<T: RedBound + Clone> Abelian<MulOp> for CheckRed<T> {}
+    impl<T: RdcBound + Clone> Abelian<AddOp> for CheckRdc<T> {}
+    impl<T: RdcBound + Clone> Abelian<MulOp> for CheckRdc<T> {}
 
-    impl<T: RedBound + Clone> CheckRing for CheckRed<T> {}
+    impl<T: RdcBound + Clone> CheckRing for CheckRdc<T> {}
 
-    impl<T: RedBound + Clone> CheckIntegralDomain for CheckRed<T> {}
+    impl<T: RdcBound + Clone> CheckIntegralDomain for CheckRdc<T> {}
 
-    impl<T: RedBound + Clone> CheckField for CheckRed<T> {}
+    impl<T: RdcBound + Clone> CheckField for CheckRdc<T> {}
 
-    impl<T: RedBound + fmt::Display> fmt::Display for CheckRed<T> {
+    impl<T: RdcBound + fmt::Display> fmt::Display for CheckRdc<T> {
         fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
             write!(f, "({})/({})", self.num, self.denom)
         }
@@ -653,23 +654,23 @@ pub mod panic_reducible {
     use std::{fmt, 
         ops::{Mul, Add, Div, Sub, Neg, Rem}
     };
-    pub trait RedBound = CheckIntegralDomain + CheckGcd + Meta where for <'a> &'a Self: 
+    pub trait RdcBound = CheckIntegralDomain + CheckGcd + Meta where for <'a> &'a Self: 
     Add<&'a Self, Output = Option<Self>> + Sub<&'a Self, Output = Option<Self>> + Neg<Output = Option<Self>> + 
     Mul<&'a Self, Output = Option<Self>> + Div<&'a Self, Output = Option<Self>> + Rem<&'a Self, Output = Option<Self>>;
 
     #[derive(Debug, Clone)]
-    pub struct Reducible <T: RedBound> {
+    pub struct Rdc <T: RdcBound> {
         num: T,
         denom: T
     }
 
-    impl<T: RedBound> Reducible<T> {
-        pub fn new(num: T, denom: T) -> Reducible<T> {
+    impl<T: RdcBound> Rdc<T> {
+        pub fn new(num: T, denom: T) -> Rdc<T> {
             if denom.is_zero() {
                 panic!("Zero denominator");
             }
 
-            let mut res = Reducible{num, denom};
+            let mut res = Rdc{num, denom};
             
             res.simplify();
             
@@ -698,25 +699,25 @@ pub mod panic_reducible {
     #[macro_export]
     macro_rules! rdc {
         ($num:expr, $denom:expr) => {
-            Reducible::new($num, $denom)
+            Rdc::new($num, $denom)
         };
 
         ($num_denom:expr) => {
-            Reducible::new($num_denom.0, $num_denom.1)
+            Rdc::new($num_denom.0, $num_denom.1)
         };
 
         ($typ:ty) => {
-            Reducible::new(<$typ>::non_zero(), <$typ>::non_zero())
+            Rdc::new(<$typ>::non_zero(), <$typ>::non_zero())
         }
     }
 
-    impl<T: RedBound> std::default::Default for Reducible<T> {
+    impl<T: RdcBound> std::default::Default for Rdc<T> {
         fn default() -> Self {
-            Reducible {num: T::non_zero(), denom: T::non_zero()}
+            Rdc {num: T::non_zero(), denom: T::non_zero()}
         }
     }
 
-    impl<T: RedBound + Clone> PartialEq for Reducible<T> {
+    impl<T: RdcBound + Clone> PartialEq for Rdc<T> {
         fn eq(&self, other: &Self) -> bool {
             let mut overflowed = false;
 
@@ -756,9 +757,9 @@ pub mod panic_reducible {
         }
     }
 
-    impl<T: RedBound + Clone> Eq for Reducible<T> {}
+    impl<T: RdcBound + Clone> Eq for Rdc<T> {}
 
-    impl<T: RedBound + PartialOrd + Clone> PartialOrd for Reducible<T> {
+    impl<T: RdcBound + PartialOrd + Clone> PartialOrd for Rdc<T> {
         fn partial_cmp(&self, other: &Self) -> Option<std::cmp::Ordering> {
             let mut overflowed = false;
 
@@ -792,8 +793,8 @@ pub mod panic_reducible {
         }
     }
 
-    impl<T: RedBound> Mul<Self> for &mut Reducible<T> {
-        type Output = Reducible<T>;
+    impl<T: RdcBound> Mul<Self> for &mut Rdc<T> {
+        type Output = Rdc<T>;
 
         fn mul(self, rhs: Self) -> Self::Output {
             let mut overflowed = false;
@@ -809,7 +810,7 @@ pub mod panic_reducible {
             };
 
             if !overflowed {
-                return Reducible {num, denom}
+                return Rdc {num, denom}
             }
         
             self.simplify();
@@ -828,12 +829,12 @@ pub mod panic_reducible {
 
             let denom = (self.denom() * rhs.denom()).expect("Failed to multiply");
 
-            Reducible {num, denom}
+            Rdc {num, denom}
         }
     }
 
-    impl<T: RedBound + Clone> Mul<Self> for &Reducible<T> {
-        type Output = Reducible<T>;
+    impl<T: RdcBound + Clone> Mul<Self> for &Rdc<T> {
+        type Output = Rdc<T>;
 
         fn mul(self, rhs: Self) -> Self::Output {
             let mut overflowed = false;
@@ -849,7 +850,7 @@ pub mod panic_reducible {
             };
 
             if !overflowed {
-                return Reducible {num, denom}
+                return Rdc {num, denom}
             }
 
             let mut new_self = self.clone();
@@ -871,12 +872,12 @@ pub mod panic_reducible {
 
             let denom = (new_self.denom() * rhs.denom()).expect("Failed to multiply");
 
-            Reducible {num, denom}
+            Rdc {num, denom}
         }
     }
 
-    impl<T: RedBound> Add<Self> for &mut Reducible<T> {
-        type Output = Reducible<T>;
+    impl<T: RdcBound> Add<Self> for &mut Rdc<T> {
+        type Output = Rdc<T>;
 
         fn add(self, rhs: Self) -> Self::Output {
             let mut already_simplified = false;
@@ -988,12 +989,12 @@ pub mod panic_reducible {
                 }
             };
 
-            Reducible {num: new_num, denom: new_denom}
+            Rdc {num: new_num, denom: new_denom}
         }
     }
 
-    impl<T: RedBound + Clone> Add<Self> for &Reducible<T> {
-        type Output = Reducible<T>;
+    impl<T: RdcBound + Clone> Add<Self> for &Rdc<T> {
+        type Output = Rdc<T>;
 
         fn add(self, rhs: Self) -> Self::Output {
             let mut new_self = self.clone();
@@ -1003,8 +1004,8 @@ pub mod panic_reducible {
         }
     }
 
-    impl<T: RedBound> Sub<Self> for &mut Reducible<T> {
-        type Output = Reducible<T>;
+    impl<T: RdcBound> Sub<Self> for &mut Rdc<T> {
+        type Output = Rdc<T>;
 
         fn sub(self, rhs: Self) -> Self::Output {
             let mut already_simplified = false;
@@ -1116,12 +1117,12 @@ pub mod panic_reducible {
                 }
             };
 
-            Reducible {num: new_num, denom: new_denom}
+            Rdc {num: new_num, denom: new_denom}
         }
     }
 
-    impl<T: RedBound + Clone> Sub<Self> for &Reducible<T> {
-        type Output = Reducible<T>;
+    impl<T: RdcBound + Clone> Sub<Self> for &Rdc<T> {
+        type Output = Rdc<T>;
 
         fn sub(self, rhs: Self) -> Self::Output {
             let mut new_self = self.clone();
@@ -1131,8 +1132,8 @@ pub mod panic_reducible {
         }
     }
 
-    impl<T: RedBound> Div<Self> for &mut Reducible<T> {
-        type Output = Reducible<T>;
+    impl<T: RdcBound> Div<Self> for &mut Rdc<T> {
+        type Output = Rdc<T>;
 
         fn div(self, rhs: Self) -> Self::Output {
             if rhs.num.is_zero() {
@@ -1152,7 +1153,7 @@ pub mod panic_reducible {
             };
 
             if !overflowed {
-                return Reducible {num, denom}
+                return Rdc {num, denom}
             }
         
             self.simplify();
@@ -1171,12 +1172,12 @@ pub mod panic_reducible {
 
             let denom = (self.denom() * rhs.num()).expect("Failed to multiply");
 
-            Reducible {num, denom}
+            Rdc {num, denom}
         }
     }
 
-    impl<T: RedBound + Clone> Div<Self> for &Reducible<T> {
-        type Output = Option<Reducible<T>>;
+    impl<T: RdcBound + Clone> Div<Self> for &Rdc<T> {
+        type Output = Option<Rdc<T>>;
 
         fn div(self, rhs: Self) -> Self::Output {
             if rhs.num.is_zero() {
@@ -1196,7 +1197,7 @@ pub mod panic_reducible {
             };
 
             if !overflowed {
-                return Some(Reducible {num, denom})
+                return Some(Rdc {num, denom})
             }
         
             let mut new_self = self.clone();
@@ -1218,28 +1219,28 @@ pub mod panic_reducible {
 
             let denom = (new_self.denom() * rhs.num())?;
 
-            Some(Reducible {num, denom})
+            Some(Rdc {num, denom})
         }
     }
 
-    impl<T: RedBound> Neg for &mut Reducible<T> {
-        type Output = Reducible<T>;
+    impl<T: RdcBound> Neg for &mut Rdc<T> {
+        type Output = Rdc<T>;
 
         fn neg(self) -> Self::Output {
-            &mut Reducible {num: T::zero(), denom: T::non_zero()} - self
+            &mut Rdc {num: T::zero(), denom: T::non_zero()} - self
         }
     }
 
-    impl<T: RedBound + Clone> Neg for &Reducible<T> {
-        type Output = Reducible<T>;
+    impl<T: RdcBound + Clone> Neg for &Rdc<T> {
+        type Output = Rdc<T>;
 
         fn neg(self) -> Self::Output {
-            &Reducible {num: T::zero(), denom: T::non_zero()} - self
+            &Rdc {num: T::zero(), denom: T::non_zero()} - self
         }
     }
 
-    impl<T: RedBound> Mul for Reducible<T> {
-        type Output = Reducible<T>;
+    impl<T: RdcBound> Mul for Rdc<T> {
+        type Output = Rdc<T>;
 
         fn mul(mut self, mut rhs: Self) -> Self::Output {
             let mut overflowed = false;
@@ -1255,7 +1256,7 @@ pub mod panic_reducible {
             };
 
             if !overflowed {
-                return Reducible {num, denom}
+                return Rdc {num, denom}
             }
         
             self.simplify();
@@ -1274,13 +1275,13 @@ pub mod panic_reducible {
 
             let denom = (self.denom() * rhs.denom()).expect("Failed to multiply");
 
-            Reducible {num, denom}
+            Rdc {num, denom}
             
         }
     }
 
-    impl<T: RedBound> Div for Reducible<T> {
-        type Output = Reducible<T>;
+    impl<T: RdcBound> Div for Rdc<T> {
+        type Output = Rdc<T>;
 
         fn div(mut self, mut rhs: Self) -> Self::Output {
             if rhs.num.is_zero() {
@@ -1300,7 +1301,7 @@ pub mod panic_reducible {
             };
 
             if !overflowed {
-                return Reducible {num, denom}
+                return Rdc {num, denom}
             }
         
             self.simplify();
@@ -1319,12 +1320,12 @@ pub mod panic_reducible {
 
             let denom = (self.denom() * rhs.num()).expect("Failed to multiply");
 
-            Reducible {num, denom}
+            Rdc {num, denom}
         }
     }
 
-    impl<T: RedBound> Add for Reducible<T> {
-        type Output = Reducible<T>;
+    impl<T: RdcBound> Add for Rdc<T> {
+        type Output = Rdc<T>;
 
         fn add(mut self, mut rhs: Self) -> Self::Output {
             let mut already_simplified = false;
@@ -1436,13 +1437,13 @@ pub mod panic_reducible {
                 }
             };
 
-            Reducible {num: new_num, denom: new_denom}
+            Rdc {num: new_num, denom: new_denom}
             
         }
     }
 
-    impl<T: RedBound> Sub for Reducible<T> {
-        type Output = Reducible<T>;
+    impl<T: RdcBound> Sub for Rdc<T> {
+        type Output = Rdc<T>;
 
         fn sub(mut self, mut rhs: Self) -> Self::Output {
             let mut already_simplified = false;
@@ -1554,67 +1555,67 @@ pub mod panic_reducible {
                 }
             };
 
-            Reducible {num: new_num, denom: new_denom}
+            Rdc {num: new_num, denom: new_denom}
         }
     }
 
-    impl<T: RedBound> Neg for Reducible<T> {
-        type Output = Reducible<T>;
+    impl<T: RdcBound> Neg for Rdc<T> {
+        type Output = Rdc<T>;
 
         fn neg(self) -> Self::Output {
-            Reducible {num: T::zero(), denom: T::non_zero()} - self
+            Rdc {num: T::zero(), denom: T::non_zero()} - self
         }
     }
 
-    impl<T: RedBound> Meta for Reducible<T> {
+    impl<T: RdcBound> Meta for Rdc<T> {
         fn name() -> String {
-            format!("Reducible<{}>", T::name())
+            format!("Rdc<{}>", T::name())
         }
 
         fn non_zero() ->  Self {
-            Reducible {num: T::non_zero(), denom: T::non_zero()}
+            Rdc {num: T::non_zero(), denom: T::non_zero()}
         }
     }
 
-    impl<T: RedBound> Ass<AddOp> for Reducible<T> {}
-    impl<T: RedBound> Ass<MulOp> for Reducible<T> {}
-    impl<T: RedBound> Com<AddOp> for Reducible<T> {}
-    impl<T: RedBound> Com<MulOp> for Reducible<T> {}
+    impl<T: RdcBound> Ass<AddOp> for Rdc<T> {}
+    impl<T: RdcBound> Ass<MulOp> for Rdc<T> {}
+    impl<T: RdcBound> Com<AddOp> for Rdc<T> {}
+    impl<T: RdcBound> Com<MulOp> for Rdc<T> {}
 
-    impl<T: RedBound + Clone> Group<AddOp> for Reducible<T> {
+    impl<T: RdcBound + Clone> Group<AddOp> for Rdc<T> {
         fn neut() -> Self {
-            Reducible {num: T::zero(), denom: T::non_zero()}
+            Rdc {num: T::zero(), denom: T::non_zero()}
         }
     }
 
-    impl<T: RedBound + Clone> Group<MulOp> for Reducible<T> {
+    impl<T: RdcBound + Clone> Group<MulOp> for Rdc<T> {
         fn neut() -> Self {
-            Reducible {num: T::non_zero(), denom:T::non_zero()}
+            Rdc {num: T::non_zero(), denom:T::non_zero()}
         }
     }
 
-    impl<T: RedBound + Clone> AddGroup for Reducible<T> {
+    impl<T: RdcBound + Clone> AddGroup for Rdc<T> {
         fn is_zero(&self) -> bool {
             self.num.is_zero()
         }
     }
 
-    impl<T: RedBound + Clone> MulGroup for Reducible<T> {
+    impl<T: RdcBound + Clone> MulGroup for Rdc<T> {
         fn is_one(&self) -> bool {
             self.num == self.denom
         }
     }
 
-    impl<T: RedBound + Clone> Abelian<AddOp> for Reducible<T> {}
-    impl<T: RedBound + Clone> Abelian<MulOp> for Reducible<T> {}
+    impl<T: RdcBound + Clone> Abelian<AddOp> for Rdc<T> {}
+    impl<T: RdcBound + Clone> Abelian<MulOp> for Rdc<T> {}
 
-    impl<T: RedBound + Clone> Ring for Reducible<T> {}
+    impl<T: RdcBound + Clone> Ring for Rdc<T> {}
 
-    impl<T: RedBound + Clone> IntegralDomain for Reducible<T> {}
+    impl<T: RdcBound + Clone> IntegralDomain for Rdc<T> {}
 
-    impl<T: RedBound + Clone> Field for Reducible<T> {}
+    impl<T: RdcBound + Clone> Field for Rdc<T> {}
 
-    impl<T: RedBound + fmt::Display> fmt::Display for Reducible<T> {
+    impl<T: RdcBound + fmt::Display> fmt::Display for Rdc<T> {
         fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
             write!(f, "({})/({})", self.num, self.denom)
         }
@@ -1639,7 +1640,7 @@ pub mod classic_reducible {
 
     impl<T: ClassicRdcBound> ClassicRdc<T> {
         pub fn new(num: T, denom:T) -> ClassicRdc<T> {
-            if num == T::zero() {
+            if denom.is_zero() {
                 panic!("Zero denominator")
             }
 
