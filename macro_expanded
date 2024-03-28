@@ -1,0 +1,2944 @@
+pub mod checked {
+    //! Provides the functionality for overflow checked computations that are very important for the whole crate
+    use paste::paste;
+    use std::ops::{Add, Mul, Sub, Div, Rem, Neg, Shl, Shr, BitAnd, BitOr, BitXor, Not};
+    use crate::tech::*;
+    pub trait IntoCheck<U> {
+        fn safe(self) -> U;
+    }
+    impl CheckU8 {
+        #[allow(dead_code)]
+        pub const fn div_ceil(self, rhs: Self) -> Self {
+            Self(self.0.div_ceil(rhs.0))
+        }
+        pub const fn next_multiple_of(self, rhs: Self) -> Option<Self> {
+            if let Some(val) = self.0.checked_next_multiple_of(rhs.0) {
+                Some(Self(val))
+            } else {
+                None
+            }
+        }
+        pub const fn is_power_of_two(self) -> bool {
+            self.0.is_power_of_two()
+        }
+        pub const fn next_power_of_two(self) -> Option<Self> {
+            if let Some(val) = self.0.checked_next_power_of_two() {
+                Some(Self(val))
+            } else {
+                None
+            }
+        }
+        pub const fn abs_diff(self, other: Self) -> Self {
+            Self(self.0.abs_diff(other.0))
+        }
+    }
+    impl Check for CheckU8 {}
+    impl Ass<AddOp> for CheckU8 {}
+    impl Ass<MulOp> for CheckU8 {}
+    impl Com<MulOp> for CheckU8 {}
+    impl Com<AddOp> for CheckU8 {}
+    impl CheckGcd for CheckU8 {
+        fn gcd(&self, rhs: &Self) -> Option<Self> {
+            self.gcd_sign_unsafe(rhs)
+        }
+    }
+    impl CheckU16 {
+        #[allow(dead_code)]
+        pub const fn div_ceil(self, rhs: Self) -> Self {
+            Self(self.0.div_ceil(rhs.0))
+        }
+        pub const fn next_multiple_of(self, rhs: Self) -> Option<Self> {
+            if let Some(val) = self.0.checked_next_multiple_of(rhs.0) {
+                Some(Self(val))
+            } else {
+                None
+            }
+        }
+        pub const fn is_power_of_two(self) -> bool {
+            self.0.is_power_of_two()
+        }
+        pub const fn next_power_of_two(self) -> Option<Self> {
+            if let Some(val) = self.0.checked_next_power_of_two() {
+                Some(Self(val))
+            } else {
+                None
+            }
+        }
+        pub const fn abs_diff(self, other: Self) -> Self {
+            Self(self.0.abs_diff(other.0))
+        }
+    }
+    impl Check for CheckU16 {}
+    impl Ass<AddOp> for CheckU16 {}
+    impl Ass<MulOp> for CheckU16 {}
+    impl Com<MulOp> for CheckU16 {}
+    impl Com<AddOp> for CheckU16 {}
+    impl CheckGcd for CheckU16 {
+        fn gcd(&self, rhs: &Self) -> Option<Self> {
+            self.gcd_sign_unsafe(rhs)
+        }
+    }
+    impl CheckU32 {
+        #[allow(dead_code)]
+        pub const fn div_ceil(self, rhs: Self) -> Self {
+            Self(self.0.div_ceil(rhs.0))
+        }
+        pub const fn next_multiple_of(self, rhs: Self) -> Option<Self> {
+            if let Some(val) = self.0.checked_next_multiple_of(rhs.0) {
+                Some(Self(val))
+            } else {
+                None
+            }
+        }
+        pub const fn is_power_of_two(self) -> bool {
+            self.0.is_power_of_two()
+        }
+        pub const fn next_power_of_two(self) -> Option<Self> {
+            if let Some(val) = self.0.checked_next_power_of_two() {
+                Some(Self(val))
+            } else {
+                None
+            }
+        }
+        pub const fn abs_diff(self, other: Self) -> Self {
+            Self(self.0.abs_diff(other.0))
+        }
+    }
+    impl Check for CheckU32 {}
+    impl Ass<AddOp> for CheckU32 {}
+    impl Ass<MulOp> for CheckU32 {}
+    impl Com<MulOp> for CheckU32 {}
+    impl Com<AddOp> for CheckU32 {}
+    impl CheckGcd for CheckU32 {
+        fn gcd(&self, rhs: &Self) -> Option<Self> {
+            self.gcd_sign_unsafe(rhs)
+        }
+    }
+    impl CheckU64 {
+        #[allow(dead_code)]
+        pub const fn div_ceil(self, rhs: Self) -> Self {
+            Self(self.0.div_ceil(rhs.0))
+        }
+        pub const fn next_multiple_of(self, rhs: Self) -> Option<Self> {
+            if let Some(val) = self.0.checked_next_multiple_of(rhs.0) {
+                Some(Self(val))
+            } else {
+                None
+            }
+        }
+        pub const fn is_power_of_two(self) -> bool {
+            self.0.is_power_of_two()
+        }
+        pub const fn next_power_of_two(self) -> Option<Self> {
+            if let Some(val) = self.0.checked_next_power_of_two() {
+                Some(Self(val))
+            } else {
+                None
+            }
+        }
+        pub const fn abs_diff(self, other: Self) -> Self {
+            Self(self.0.abs_diff(other.0))
+        }
+    }
+    impl Check for CheckU64 {}
+    impl Ass<AddOp> for CheckU64 {}
+    impl Ass<MulOp> for CheckU64 {}
+    impl Com<MulOp> for CheckU64 {}
+    impl Com<AddOp> for CheckU64 {}
+    impl CheckGcd for CheckU64 {
+        fn gcd(&self, rhs: &Self) -> Option<Self> {
+            self.gcd_sign_unsafe(rhs)
+        }
+    }
+    impl CheckU128 {
+        #[allow(dead_code)]
+        pub const fn div_ceil(self, rhs: Self) -> Self {
+            Self(self.0.div_ceil(rhs.0))
+        }
+        pub const fn next_multiple_of(self, rhs: Self) -> Option<Self> {
+            if let Some(val) = self.0.checked_next_multiple_of(rhs.0) {
+                Some(Self(val))
+            } else {
+                None
+            }
+        }
+        pub const fn is_power_of_two(self) -> bool {
+            self.0.is_power_of_two()
+        }
+        pub const fn next_power_of_two(self) -> Option<Self> {
+            if let Some(val) = self.0.checked_next_power_of_two() {
+                Some(Self(val))
+            } else {
+                None
+            }
+        }
+        pub const fn abs_diff(self, other: Self) -> Self {
+            Self(self.0.abs_diff(other.0))
+        }
+    }
+    impl Check for CheckU128 {}
+    impl Ass<AddOp> for CheckU128 {}
+    impl Ass<MulOp> for CheckU128 {}
+    impl Com<MulOp> for CheckU128 {}
+    impl Com<AddOp> for CheckU128 {}
+    impl CheckGcd for CheckU128 {
+        fn gcd(&self, rhs: &Self) -> Option<Self> {
+            self.gcd_sign_unsafe(rhs)
+        }
+    }
+    impl CheckUsize {
+        #[allow(dead_code)]
+        pub const fn div_ceil(self, rhs: Self) -> Self {
+            Self(self.0.div_ceil(rhs.0))
+        }
+        pub const fn next_multiple_of(self, rhs: Self) -> Option<Self> {
+            if let Some(val) = self.0.checked_next_multiple_of(rhs.0) {
+                Some(Self(val))
+            } else {
+                None
+            }
+        }
+        pub const fn is_power_of_two(self) -> bool {
+            self.0.is_power_of_two()
+        }
+        pub const fn next_power_of_two(self) -> Option<Self> {
+            if let Some(val) = self.0.checked_next_power_of_two() {
+                Some(Self(val))
+            } else {
+                None
+            }
+        }
+        pub const fn abs_diff(self, other: Self) -> Self {
+            Self(self.0.abs_diff(other.0))
+        }
+    }
+    impl Check for CheckUsize {}
+    impl Ass<AddOp> for CheckUsize {}
+    impl Ass<MulOp> for CheckUsize {}
+    impl Com<MulOp> for CheckUsize {}
+    impl Com<AddOp> for CheckUsize {}
+    impl CheckGcd for CheckUsize {
+        fn gcd(&self, rhs: &Self) -> Option<Self> {
+            self.gcd_sign_unsafe(rhs)
+        }
+    }
+    impl CheckI8 {
+        #[allow(dead_code)]
+        pub const fn is_positive(self) -> bool {
+            self.0.is_positive()
+        }
+        #[allow(dead_code)]
+        pub const fn is_negative(self) -> bool {
+            self.0.is_negative()
+        }
+        pub const fn abs_diff(self, other: Self) -> CheckU8 {
+            CheckU8(self.0.abs_diff(other.0))
+        }
+        pub const fn abs(self) -> Option<Self> {
+            if let Some(val) = self.0.checked_abs() { Some(Self(val)) } else { None }
+        }
+    }
+    impl Com<AddOp> for CheckI8 {}
+    impl Ass<AddOp> for CheckI8 {}
+    impl Com<MulOp> for CheckI8 {}
+    impl Ass<MulOp> for CheckI8 {}
+    impl Abelian<AddOp> for CheckI8 {}
+    impl Check for CheckI8 {}
+    impl CheckRing for CheckI8 {}
+    impl CheckAddGroup for CheckI8 {}
+    impl CheckIntegralDomain for CheckI8 {}
+    impl Group<AddOp> for CheckI8 {
+        fn neut() -> Self {
+            Self::try_from(0).unwrap()
+        }
+    }
+    impl CheckGcd for CheckI8 {
+        fn gcd(&self, rhs: &Self) -> Option<Self> {
+            self.abs()?.gcd_sign_unsafe(&rhs.abs()?)
+        }
+    }
+    impl CheckI16 {
+        #[allow(dead_code)]
+        pub const fn is_positive(self) -> bool {
+            self.0.is_positive()
+        }
+        #[allow(dead_code)]
+        pub const fn is_negative(self) -> bool {
+            self.0.is_negative()
+        }
+        pub const fn abs_diff(self, other: Self) -> CheckU16 {
+            CheckU16(self.0.abs_diff(other.0))
+        }
+        pub const fn abs(self) -> Option<Self> {
+            if let Some(val) = self.0.checked_abs() { Some(Self(val)) } else { None }
+        }
+    }
+    impl Com<AddOp> for CheckI16 {}
+    impl Ass<AddOp> for CheckI16 {}
+    impl Com<MulOp> for CheckI16 {}
+    impl Ass<MulOp> for CheckI16 {}
+    impl Abelian<AddOp> for CheckI16 {}
+    impl Check for CheckI16 {}
+    impl CheckRing for CheckI16 {}
+    impl CheckAddGroup for CheckI16 {}
+    impl CheckIntegralDomain for CheckI16 {}
+    impl Group<AddOp> for CheckI16 {
+        fn neut() -> Self {
+            Self::try_from(0).unwrap()
+        }
+    }
+    impl CheckGcd for CheckI16 {
+        fn gcd(&self, rhs: &Self) -> Option<Self> {
+            self.abs()?.gcd_sign_unsafe(&rhs.abs()?)
+        }
+    }
+    impl CheckI32 {
+        #[allow(dead_code)]
+        pub const fn is_positive(self) -> bool {
+            self.0.is_positive()
+        }
+        #[allow(dead_code)]
+        pub const fn is_negative(self) -> bool {
+            self.0.is_negative()
+        }
+        pub const fn abs_diff(self, other: Self) -> CheckU32 {
+            CheckU32(self.0.abs_diff(other.0))
+        }
+        pub const fn abs(self) -> Option<Self> {
+            if let Some(val) = self.0.checked_abs() { Some(Self(val)) } else { None }
+        }
+    }
+    impl Com<AddOp> for CheckI32 {}
+    impl Ass<AddOp> for CheckI32 {}
+    impl Com<MulOp> for CheckI32 {}
+    impl Ass<MulOp> for CheckI32 {}
+    impl Abelian<AddOp> for CheckI32 {}
+    impl Check for CheckI32 {}
+    impl CheckRing for CheckI32 {}
+    impl CheckAddGroup for CheckI32 {}
+    impl CheckIntegralDomain for CheckI32 {}
+    impl Group<AddOp> for CheckI32 {
+        fn neut() -> Self {
+            Self::try_from(0).unwrap()
+        }
+    }
+    impl CheckGcd for CheckI32 {
+        fn gcd(&self, rhs: &Self) -> Option<Self> {
+            self.abs()?.gcd_sign_unsafe(&rhs.abs()?)
+        }
+    }
+    impl CheckI64 {
+        #[allow(dead_code)]
+        pub const fn is_positive(self) -> bool {
+            self.0.is_positive()
+        }
+        #[allow(dead_code)]
+        pub const fn is_negative(self) -> bool {
+            self.0.is_negative()
+        }
+        pub const fn abs_diff(self, other: Self) -> CheckU64 {
+            CheckU64(self.0.abs_diff(other.0))
+        }
+        pub const fn abs(self) -> Option<Self> {
+            if let Some(val) = self.0.checked_abs() { Some(Self(val)) } else { None }
+        }
+    }
+    impl Com<AddOp> for CheckI64 {}
+    impl Ass<AddOp> for CheckI64 {}
+    impl Com<MulOp> for CheckI64 {}
+    impl Ass<MulOp> for CheckI64 {}
+    impl Abelian<AddOp> for CheckI64 {}
+    impl Check for CheckI64 {}
+    impl CheckRing for CheckI64 {}
+    impl CheckAddGroup for CheckI64 {}
+    impl CheckIntegralDomain for CheckI64 {}
+    impl Group<AddOp> for CheckI64 {
+        fn neut() -> Self {
+            Self::try_from(0).unwrap()
+        }
+    }
+    impl CheckGcd for CheckI64 {
+        fn gcd(&self, rhs: &Self) -> Option<Self> {
+            self.abs()?.gcd_sign_unsafe(&rhs.abs()?)
+        }
+    }
+    impl CheckI128 {
+        #[allow(dead_code)]
+        pub const fn is_positive(self) -> bool {
+            self.0.is_positive()
+        }
+        #[allow(dead_code)]
+        pub const fn is_negative(self) -> bool {
+            self.0.is_negative()
+        }
+        pub const fn abs_diff(self, other: Self) -> CheckU128 {
+            CheckU128(self.0.abs_diff(other.0))
+        }
+        pub const fn abs(self) -> Option<Self> {
+            if let Some(val) = self.0.checked_abs() { Some(Self(val)) } else { None }
+        }
+    }
+    impl Com<AddOp> for CheckI128 {}
+    impl Ass<AddOp> for CheckI128 {}
+    impl Com<MulOp> for CheckI128 {}
+    impl Ass<MulOp> for CheckI128 {}
+    impl Abelian<AddOp> for CheckI128 {}
+    impl Check for CheckI128 {}
+    impl CheckRing for CheckI128 {}
+    impl CheckAddGroup for CheckI128 {}
+    impl CheckIntegralDomain for CheckI128 {}
+    impl Group<AddOp> for CheckI128 {
+        fn neut() -> Self {
+            Self::try_from(0).unwrap()
+        }
+    }
+    impl CheckGcd for CheckI128 {
+        fn gcd(&self, rhs: &Self) -> Option<Self> {
+            self.abs()?.gcd_sign_unsafe(&rhs.abs()?)
+        }
+    }
+    impl CheckIsize {
+        #[allow(dead_code)]
+        pub const fn is_positive(self) -> bool {
+            self.0.is_positive()
+        }
+        #[allow(dead_code)]
+        pub const fn is_negative(self) -> bool {
+            self.0.is_negative()
+        }
+        pub const fn abs_diff(self, other: Self) -> CheckUsize {
+            CheckUsize(self.0.abs_diff(other.0))
+        }
+        pub const fn abs(self) -> Option<Self> {
+            if let Some(val) = self.0.checked_abs() { Some(Self(val)) } else { None }
+        }
+    }
+    impl Com<AddOp> for CheckIsize {}
+    impl Ass<AddOp> for CheckIsize {}
+    impl Com<MulOp> for CheckIsize {}
+    impl Ass<MulOp> for CheckIsize {}
+    impl Abelian<AddOp> for CheckIsize {}
+    impl Check for CheckIsize {}
+    impl CheckRing for CheckIsize {}
+    impl CheckAddGroup for CheckIsize {}
+    impl CheckIntegralDomain for CheckIsize {}
+    impl Group<AddOp> for CheckIsize {
+        fn neut() -> Self {
+            Self::try_from(0).unwrap()
+        }
+    }
+    impl CheckGcd for CheckIsize {
+        fn gcd(&self, rhs: &Self) -> Option<Self> {
+            self.abs()?.gcd_sign_unsafe(&rhs.abs()?)
+        }
+    }
+    impl From<CheckU8> for CheckU16 {
+        fn from(value: CheckU8) -> Self {
+            Self(value.0 as u16)
+        }
+    }
+    impl From<u8> for CheckU16 {
+        fn from(value: u8) -> Self {
+            Self(value as u16)
+        }
+    }
+    impl From<CheckI8> for CheckI16 {
+        fn from(value: CheckI8) -> Self {
+            Self(value.0 as i16)
+        }
+    }
+    impl From<i8> for CheckI16 {
+        fn from(value: i8) -> Self {
+            Self(value as i16)
+        }
+    }
+    impl From<CheckU8> for CheckU32 {
+        fn from(value: CheckU8) -> Self {
+            Self(value.0 as u32)
+        }
+    }
+    impl From<u8> for CheckU32 {
+        fn from(value: u8) -> Self {
+            Self(value as u32)
+        }
+    }
+    impl From<CheckU16> for CheckU32 {
+        fn from(value: CheckU16) -> Self {
+            Self(value.0 as u32)
+        }
+    }
+    impl From<u16> for CheckU32 {
+        fn from(value: u16) -> Self {
+            Self(value as u32)
+        }
+    }
+    impl From<CheckI8> for CheckI32 {
+        fn from(value: CheckI8) -> Self {
+            Self(value.0 as i32)
+        }
+    }
+    impl From<i8> for CheckI32 {
+        fn from(value: i8) -> Self {
+            Self(value as i32)
+        }
+    }
+    impl From<CheckI16> for CheckI32 {
+        fn from(value: CheckI16) -> Self {
+            Self(value.0 as i32)
+        }
+    }
+    impl From<i16> for CheckI32 {
+        fn from(value: i16) -> Self {
+            Self(value as i32)
+        }
+    }
+    impl From<CheckU8> for CheckU64 {
+        fn from(value: CheckU8) -> Self {
+            Self(value.0 as u64)
+        }
+    }
+    impl From<u8> for CheckU64 {
+        fn from(value: u8) -> Self {
+            Self(value as u64)
+        }
+    }
+    impl From<CheckU16> for CheckU64 {
+        fn from(value: CheckU16) -> Self {
+            Self(value.0 as u64)
+        }
+    }
+    impl From<u16> for CheckU64 {
+        fn from(value: u16) -> Self {
+            Self(value as u64)
+        }
+    }
+    impl From<CheckU32> for CheckU64 {
+        fn from(value: CheckU32) -> Self {
+            Self(value.0 as u64)
+        }
+    }
+    impl From<u32> for CheckU64 {
+        fn from(value: u32) -> Self {
+            Self(value as u64)
+        }
+    }
+    impl From<CheckI8> for CheckI64 {
+        fn from(value: CheckI8) -> Self {
+            Self(value.0 as i64)
+        }
+    }
+    impl From<i8> for CheckI64 {
+        fn from(value: i8) -> Self {
+            Self(value as i64)
+        }
+    }
+    impl From<CheckI16> for CheckI64 {
+        fn from(value: CheckI16) -> Self {
+            Self(value.0 as i64)
+        }
+    }
+    impl From<i16> for CheckI64 {
+        fn from(value: i16) -> Self {
+            Self(value as i64)
+        }
+    }
+    impl From<CheckI32> for CheckI64 {
+        fn from(value: CheckI32) -> Self {
+            Self(value.0 as i64)
+        }
+    }
+    impl From<i32> for CheckI64 {
+        fn from(value: i32) -> Self {
+            Self(value as i64)
+        }
+    }
+    impl From<CheckU8> for CheckU128 {
+        fn from(value: CheckU8) -> Self {
+            Self(value.0 as u128)
+        }
+    }
+    impl From<u8> for CheckU128 {
+        fn from(value: u8) -> Self {
+            Self(value as u128)
+        }
+    }
+    impl From<CheckU16> for CheckU128 {
+        fn from(value: CheckU16) -> Self {
+            Self(value.0 as u128)
+        }
+    }
+    impl From<u16> for CheckU128 {
+        fn from(value: u16) -> Self {
+            Self(value as u128)
+        }
+    }
+    impl From<CheckU32> for CheckU128 {
+        fn from(value: CheckU32) -> Self {
+            Self(value.0 as u128)
+        }
+    }
+    impl From<u32> for CheckU128 {
+        fn from(value: u32) -> Self {
+            Self(value as u128)
+        }
+    }
+    impl From<CheckU64> for CheckU128 {
+        fn from(value: CheckU64) -> Self {
+            Self(value.0 as u128)
+        }
+    }
+    impl From<u64> for CheckU128 {
+        fn from(value: u64) -> Self {
+            Self(value as u128)
+        }
+    }
+    impl From<CheckI8> for CheckI128 {
+        fn from(value: CheckI8) -> Self {
+            Self(value.0 as i128)
+        }
+    }
+    impl From<i8> for CheckI128 {
+        fn from(value: i8) -> Self {
+            Self(value as i128)
+        }
+    }
+    impl From<CheckI16> for CheckI128 {
+        fn from(value: CheckI16) -> Self {
+            Self(value.0 as i128)
+        }
+    }
+    impl From<i16> for CheckI128 {
+        fn from(value: i16) -> Self {
+            Self(value as i128)
+        }
+    }
+    impl From<CheckI32> for CheckI128 {
+        fn from(value: CheckI32) -> Self {
+            Self(value.0 as i128)
+        }
+    }
+    impl From<i32> for CheckI128 {
+        fn from(value: i32) -> Self {
+            Self(value as i128)
+        }
+    }
+    impl From<CheckI64> for CheckI128 {
+        fn from(value: CheckI64) -> Self {
+            Self(value.0 as i128)
+        }
+    }
+    impl From<i64> for CheckI128 {
+        fn from(value: i64) -> Self {
+            Self(value as i128)
+        }
+    }
+    impl From<CheckU8> for CheckUsize {
+        fn from(value: CheckU8) -> Self {
+            Self(value.0 as usize)
+        }
+    }
+    impl From<u8> for CheckUsize {
+        fn from(value: u8) -> Self {
+            Self(value as usize)
+        }
+    }
+    impl From<CheckU16> for CheckUsize {
+        fn from(value: CheckU16) -> Self {
+            Self(value.0 as usize)
+        }
+    }
+    impl From<u16> for CheckUsize {
+        fn from(value: u16) -> Self {
+            Self(value as usize)
+        }
+    }
+    impl From<CheckI8> for CheckIsize {
+        fn from(value: CheckI8) -> Self {
+            Self(value.0 as isize)
+        }
+    }
+    impl From<i8> for CheckIsize {
+        fn from(value: i8) -> Self {
+            Self(value as isize)
+        }
+    }
+    impl From<CheckU8> for CheckIsize {
+        fn from(value: CheckU8) -> Self {
+            Self(value.0 as isize)
+        }
+    }
+    impl From<u8> for CheckIsize {
+        fn from(value: u8) -> Self {
+            Self(value as isize)
+        }
+    }
+    impl From<CheckI16> for CheckIsize {
+        fn from(value: CheckI16) -> Self {
+            Self(value.0 as isize)
+        }
+    }
+    impl From<i16> for CheckIsize {
+        fn from(value: i16) -> Self {
+            Self(value as isize)
+        }
+    }
+    impl From<std::num::NonZeroU8> for CheckU8 {
+        fn from(value: std::num::NonZeroU8) -> Self {
+            Self(<u8>::from(value))
+        }
+    }
+    impl From<bool> for CheckU8 {
+        fn from(value: bool) -> Self {
+            Self(<u8>::from(value))
+        }
+    }
+    impl From<std::num::NonZeroI8> for CheckI8 {
+        fn from(value: std::num::NonZeroI8) -> Self {
+            Self(<i8>::from(value))
+        }
+    }
+    impl From<bool> for CheckI8 {
+        fn from(value: bool) -> Self {
+            Self(<i8>::from(value))
+        }
+    }
+    impl From<std::num::NonZeroU16> for CheckU16 {
+        fn from(value: std::num::NonZeroU16) -> Self {
+            Self(<u16>::from(value))
+        }
+    }
+    impl From<bool> for CheckU16 {
+        fn from(value: bool) -> Self {
+            Self(<u16>::from(value))
+        }
+    }
+    impl From<std::num::NonZeroI16> for CheckI16 {
+        fn from(value: std::num::NonZeroI16) -> Self {
+            Self(<i16>::from(value))
+        }
+    }
+    impl From<bool> for CheckI16 {
+        fn from(value: bool) -> Self {
+            Self(<i16>::from(value))
+        }
+    }
+    impl From<std::num::NonZeroU32> for CheckU32 {
+        fn from(value: std::num::NonZeroU32) -> Self {
+            Self(<u32>::from(value))
+        }
+    }
+    impl From<bool> for CheckU32 {
+        fn from(value: bool) -> Self {
+            Self(<u32>::from(value))
+        }
+    }
+    impl From<std::net::Ipv4Addr> for CheckU32 {
+        fn from(value: std::net::Ipv4Addr) -> Self {
+            Self(<u32>::from(value))
+        }
+    }
+    impl From<char> for CheckU32 {
+        fn from(value: char) -> Self {
+            Self(<u32>::from(value))
+        }
+    }
+    impl From<std::num::NonZeroI32> for CheckI32 {
+        fn from(value: std::num::NonZeroI32) -> Self {
+            Self(<i32>::from(value))
+        }
+    }
+    impl From<bool> for CheckI32 {
+        fn from(value: bool) -> Self {
+            Self(<i32>::from(value))
+        }
+    }
+    impl From<std::num::NonZeroU64> for CheckU64 {
+        fn from(value: std::num::NonZeroU64) -> Self {
+            Self(<u64>::from(value))
+        }
+    }
+    impl From<bool> for CheckU64 {
+        fn from(value: bool) -> Self {
+            Self(<u64>::from(value))
+        }
+    }
+    impl From<char> for CheckU64 {
+        fn from(value: char) -> Self {
+            Self(<u64>::from(value))
+        }
+    }
+    impl From<std::num::NonZeroI64> for CheckI64 {
+        fn from(value: std::num::NonZeroI64) -> Self {
+            Self(<i64>::from(value))
+        }
+    }
+    impl From<bool> for CheckI64 {
+        fn from(value: bool) -> Self {
+            Self(<i64>::from(value))
+        }
+    }
+    impl From<std::num::NonZeroU128> for CheckU128 {
+        fn from(value: std::num::NonZeroU128) -> Self {
+            Self(<u128>::from(value))
+        }
+    }
+    impl From<bool> for CheckU128 {
+        fn from(value: bool) -> Self {
+            Self(<u128>::from(value))
+        }
+    }
+    impl From<std::net::Ipv6Addr> for CheckU128 {
+        fn from(value: std::net::Ipv6Addr) -> Self {
+            Self(<u128>::from(value))
+        }
+    }
+    impl From<char> for CheckU128 {
+        fn from(value: char) -> Self {
+            Self(<u128>::from(value))
+        }
+    }
+    impl From<std::num::NonZeroI128> for CheckI128 {
+        fn from(value: std::num::NonZeroI128) -> Self {
+            Self(<i128>::from(value))
+        }
+    }
+    impl From<bool> for CheckI128 {
+        fn from(value: bool) -> Self {
+            Self(<i128>::from(value))
+        }
+    }
+    impl From<std::num::NonZeroUsize> for CheckUsize {
+        fn from(value: std::num::NonZeroUsize) -> Self {
+            Self(<usize>::from(value))
+        }
+    }
+    impl From<bool> for CheckUsize {
+        fn from(value: bool) -> Self {
+            Self(<usize>::from(value))
+        }
+    }
+    impl From<std::num::NonZeroIsize> for CheckIsize {
+        fn from(value: std::num::NonZeroIsize) -> Self {
+            Self(<isize>::from(value))
+        }
+    }
+    impl From<bool> for CheckIsize {
+        fn from(value: bool) -> Self {
+            Self(<isize>::from(value))
+        }
+    }
+    impl TryFrom<u8> for CheckU8 {
+        type Error = <u8 as TryFrom<u8>>::Error;
+        fn try_from(u: u8) -> Result<CheckU8, Self::Error> {
+            match <u8>::try_from(u) {
+                Ok(val) => Ok(Self(val)),
+                Err(e) => Err(e),
+            }
+        }
+    }
+    impl TryFrom<i8> for CheckU8 {
+        type Error = <u8 as TryFrom<i8>>::Error;
+        fn try_from(u: i8) -> Result<CheckU8, Self::Error> {
+            match <u8>::try_from(u) {
+                Ok(val) => Ok(Self(val)),
+                Err(e) => Err(e),
+            }
+        }
+    }
+    impl TryFrom<u16> for CheckU8 {
+        type Error = <u8 as TryFrom<u16>>::Error;
+        fn try_from(u: u16) -> Result<CheckU8, Self::Error> {
+            match <u8>::try_from(u) {
+                Ok(val) => Ok(Self(val)),
+                Err(e) => Err(e),
+            }
+        }
+    }
+    impl TryFrom<i16> for CheckU8 {
+        type Error = <u8 as TryFrom<i16>>::Error;
+        fn try_from(u: i16) -> Result<CheckU8, Self::Error> {
+            match <u8>::try_from(u) {
+                Ok(val) => Ok(Self(val)),
+                Err(e) => Err(e),
+            }
+        }
+    }
+    impl TryFrom<u32> for CheckU8 {
+        type Error = <u8 as TryFrom<u32>>::Error;
+        fn try_from(u: u32) -> Result<CheckU8, Self::Error> {
+            match <u8>::try_from(u) {
+                Ok(val) => Ok(Self(val)),
+                Err(e) => Err(e),
+            }
+        }
+    }
+    impl TryFrom<i32> for CheckU8 {
+        type Error = <u8 as TryFrom<i32>>::Error;
+        fn try_from(u: i32) -> Result<CheckU8, Self::Error> {
+            match <u8>::try_from(u) {
+                Ok(val) => Ok(Self(val)),
+                Err(e) => Err(e),
+            }
+        }
+    }
+    impl TryFrom<u64> for CheckU8 {
+        type Error = <u8 as TryFrom<u64>>::Error;
+        fn try_from(u: u64) -> Result<CheckU8, Self::Error> {
+            match <u8>::try_from(u) {
+                Ok(val) => Ok(Self(val)),
+                Err(e) => Err(e),
+            }
+        }
+    }
+    impl TryFrom<i64> for CheckU8 {
+        type Error = <u8 as TryFrom<i64>>::Error;
+        fn try_from(u: i64) -> Result<CheckU8, Self::Error> {
+            match <u8>::try_from(u) {
+                Ok(val) => Ok(Self(val)),
+                Err(e) => Err(e),
+            }
+        }
+    }
+    impl TryFrom<u128> for CheckU8 {
+        type Error = <u8 as TryFrom<u128>>::Error;
+        fn try_from(u: u128) -> Result<CheckU8, Self::Error> {
+            match <u8>::try_from(u) {
+                Ok(val) => Ok(Self(val)),
+                Err(e) => Err(e),
+            }
+        }
+    }
+    impl TryFrom<i128> for CheckU8 {
+        type Error = <u8 as TryFrom<i128>>::Error;
+        fn try_from(u: i128) -> Result<CheckU8, Self::Error> {
+            match <u8>::try_from(u) {
+                Ok(val) => Ok(Self(val)),
+                Err(e) => Err(e),
+            }
+        }
+    }
+    impl TryFrom<usize> for CheckU8 {
+        type Error = <u8 as TryFrom<usize>>::Error;
+        fn try_from(u: usize) -> Result<CheckU8, Self::Error> {
+            match <u8>::try_from(u) {
+                Ok(val) => Ok(Self(val)),
+                Err(e) => Err(e),
+            }
+        }
+    }
+    impl TryFrom<isize> for CheckU8 {
+        type Error = <u8 as TryFrom<isize>>::Error;
+        fn try_from(u: isize) -> Result<CheckU8, Self::Error> {
+            match <u8>::try_from(u) {
+                Ok(val) => Ok(Self(val)),
+                Err(e) => Err(e),
+            }
+        }
+    }
+    impl TryFrom<u8> for CheckI8 {
+        type Error = <i8 as TryFrom<u8>>::Error;
+        fn try_from(u: u8) -> Result<CheckI8, Self::Error> {
+            match <i8>::try_from(u) {
+                Ok(val) => Ok(Self(val)),
+                Err(e) => Err(e),
+            }
+        }
+    }
+    impl TryFrom<i8> for CheckI8 {
+        type Error = <i8 as TryFrom<i8>>::Error;
+        fn try_from(u: i8) -> Result<CheckI8, Self::Error> {
+            match <i8>::try_from(u) {
+                Ok(val) => Ok(Self(val)),
+                Err(e) => Err(e),
+            }
+        }
+    }
+    impl TryFrom<u16> for CheckI8 {
+        type Error = <i8 as TryFrom<u16>>::Error;
+        fn try_from(u: u16) -> Result<CheckI8, Self::Error> {
+            match <i8>::try_from(u) {
+                Ok(val) => Ok(Self(val)),
+                Err(e) => Err(e),
+            }
+        }
+    }
+    impl TryFrom<i16> for CheckI8 {
+        type Error = <i8 as TryFrom<i16>>::Error;
+        fn try_from(u: i16) -> Result<CheckI8, Self::Error> {
+            match <i8>::try_from(u) {
+                Ok(val) => Ok(Self(val)),
+                Err(e) => Err(e),
+            }
+        }
+    }
+    impl TryFrom<u32> for CheckI8 {
+        type Error = <i8 as TryFrom<u32>>::Error;
+        fn try_from(u: u32) -> Result<CheckI8, Self::Error> {
+            match <i8>::try_from(u) {
+                Ok(val) => Ok(Self(val)),
+                Err(e) => Err(e),
+            }
+        }
+    }
+    impl TryFrom<i32> for CheckI8 {
+        type Error = <i8 as TryFrom<i32>>::Error;
+        fn try_from(u: i32) -> Result<CheckI8, Self::Error> {
+            match <i8>::try_from(u) {
+                Ok(val) => Ok(Self(val)),
+                Err(e) => Err(e),
+            }
+        }
+    }
+    impl TryFrom<u64> for CheckI8 {
+        type Error = <i8 as TryFrom<u64>>::Error;
+        fn try_from(u: u64) -> Result<CheckI8, Self::Error> {
+            match <i8>::try_from(u) {
+                Ok(val) => Ok(Self(val)),
+                Err(e) => Err(e),
+            }
+        }
+    }
+    impl TryFrom<i64> for CheckI8 {
+        type Error = <i8 as TryFrom<i64>>::Error;
+        fn try_from(u: i64) -> Result<CheckI8, Self::Error> {
+            match <i8>::try_from(u) {
+                Ok(val) => Ok(Self(val)),
+                Err(e) => Err(e),
+            }
+        }
+    }
+    impl TryFrom<u128> for CheckI8 {
+        type Error = <i8 as TryFrom<u128>>::Error;
+        fn try_from(u: u128) -> Result<CheckI8, Self::Error> {
+            match <i8>::try_from(u) {
+                Ok(val) => Ok(Self(val)),
+                Err(e) => Err(e),
+            }
+        }
+    }
+    impl TryFrom<i128> for CheckI8 {
+        type Error = <i8 as TryFrom<i128>>::Error;
+        fn try_from(u: i128) -> Result<CheckI8, Self::Error> {
+            match <i8>::try_from(u) {
+                Ok(val) => Ok(Self(val)),
+                Err(e) => Err(e),
+            }
+        }
+    }
+    impl TryFrom<usize> for CheckI8 {
+        type Error = <i8 as TryFrom<usize>>::Error;
+        fn try_from(u: usize) -> Result<CheckI8, Self::Error> {
+            match <i8>::try_from(u) {
+                Ok(val) => Ok(Self(val)),
+                Err(e) => Err(e),
+            }
+        }
+    }
+    impl TryFrom<isize> for CheckI8 {
+        type Error = <i8 as TryFrom<isize>>::Error;
+        fn try_from(u: isize) -> Result<CheckI8, Self::Error> {
+            match <i8>::try_from(u) {
+                Ok(val) => Ok(Self(val)),
+                Err(e) => Err(e),
+            }
+        }
+    }
+    impl TryFrom<i8> for CheckU16 {
+        type Error = <u16 as TryFrom<i8>>::Error;
+        fn try_from(u: i8) -> Result<CheckU16, Self::Error> {
+            match <u16>::try_from(u) {
+                Ok(val) => Ok(Self(val)),
+                Err(e) => Err(e),
+            }
+        }
+    }
+    impl TryFrom<u16> for CheckU16 {
+        type Error = <u16 as TryFrom<u16>>::Error;
+        fn try_from(u: u16) -> Result<CheckU16, Self::Error> {
+            match <u16>::try_from(u) {
+                Ok(val) => Ok(Self(val)),
+                Err(e) => Err(e),
+            }
+        }
+    }
+    impl TryFrom<i16> for CheckU16 {
+        type Error = <u16 as TryFrom<i16>>::Error;
+        fn try_from(u: i16) -> Result<CheckU16, Self::Error> {
+            match <u16>::try_from(u) {
+                Ok(val) => Ok(Self(val)),
+                Err(e) => Err(e),
+            }
+        }
+    }
+    impl TryFrom<u32> for CheckU16 {
+        type Error = <u16 as TryFrom<u32>>::Error;
+        fn try_from(u: u32) -> Result<CheckU16, Self::Error> {
+            match <u16>::try_from(u) {
+                Ok(val) => Ok(Self(val)),
+                Err(e) => Err(e),
+            }
+        }
+    }
+    impl TryFrom<i32> for CheckU16 {
+        type Error = <u16 as TryFrom<i32>>::Error;
+        fn try_from(u: i32) -> Result<CheckU16, Self::Error> {
+            match <u16>::try_from(u) {
+                Ok(val) => Ok(Self(val)),
+                Err(e) => Err(e),
+            }
+        }
+    }
+    impl TryFrom<u64> for CheckU16 {
+        type Error = <u16 as TryFrom<u64>>::Error;
+        fn try_from(u: u64) -> Result<CheckU16, Self::Error> {
+            match <u16>::try_from(u) {
+                Ok(val) => Ok(Self(val)),
+                Err(e) => Err(e),
+            }
+        }
+    }
+    impl TryFrom<i64> for CheckU16 {
+        type Error = <u16 as TryFrom<i64>>::Error;
+        fn try_from(u: i64) -> Result<CheckU16, Self::Error> {
+            match <u16>::try_from(u) {
+                Ok(val) => Ok(Self(val)),
+                Err(e) => Err(e),
+            }
+        }
+    }
+    impl TryFrom<u128> for CheckU16 {
+        type Error = <u16 as TryFrom<u128>>::Error;
+        fn try_from(u: u128) -> Result<CheckU16, Self::Error> {
+            match <u16>::try_from(u) {
+                Ok(val) => Ok(Self(val)),
+                Err(e) => Err(e),
+            }
+        }
+    }
+    impl TryFrom<i128> for CheckU16 {
+        type Error = <u16 as TryFrom<i128>>::Error;
+        fn try_from(u: i128) -> Result<CheckU16, Self::Error> {
+            match <u16>::try_from(u) {
+                Ok(val) => Ok(Self(val)),
+                Err(e) => Err(e),
+            }
+        }
+    }
+    impl TryFrom<usize> for CheckU16 {
+        type Error = <u16 as TryFrom<usize>>::Error;
+        fn try_from(u: usize) -> Result<CheckU16, Self::Error> {
+            match <u16>::try_from(u) {
+                Ok(val) => Ok(Self(val)),
+                Err(e) => Err(e),
+            }
+        }
+    }
+    impl TryFrom<isize> for CheckU16 {
+        type Error = <u16 as TryFrom<isize>>::Error;
+        fn try_from(u: isize) -> Result<CheckU16, Self::Error> {
+            match <u16>::try_from(u) {
+                Ok(val) => Ok(Self(val)),
+                Err(e) => Err(e),
+            }
+        }
+    }
+    impl TryFrom<u8> for CheckI16 {
+        type Error = <i16 as TryFrom<u8>>::Error;
+        fn try_from(u: u8) -> Result<CheckI16, Self::Error> {
+            match <i16>::try_from(u) {
+                Ok(val) => Ok(Self(val)),
+                Err(e) => Err(e),
+            }
+        }
+    }
+    impl TryFrom<u16> for CheckI16 {
+        type Error = <i16 as TryFrom<u16>>::Error;
+        fn try_from(u: u16) -> Result<CheckI16, Self::Error> {
+            match <i16>::try_from(u) {
+                Ok(val) => Ok(Self(val)),
+                Err(e) => Err(e),
+            }
+        }
+    }
+    impl TryFrom<i16> for CheckI16 {
+        type Error = <i16 as TryFrom<i16>>::Error;
+        fn try_from(u: i16) -> Result<CheckI16, Self::Error> {
+            match <i16>::try_from(u) {
+                Ok(val) => Ok(Self(val)),
+                Err(e) => Err(e),
+            }
+        }
+    }
+    impl TryFrom<u32> for CheckI16 {
+        type Error = <i16 as TryFrom<u32>>::Error;
+        fn try_from(u: u32) -> Result<CheckI16, Self::Error> {
+            match <i16>::try_from(u) {
+                Ok(val) => Ok(Self(val)),
+                Err(e) => Err(e),
+            }
+        }
+    }
+    impl TryFrom<i32> for CheckI16 {
+        type Error = <i16 as TryFrom<i32>>::Error;
+        fn try_from(u: i32) -> Result<CheckI16, Self::Error> {
+            match <i16>::try_from(u) {
+                Ok(val) => Ok(Self(val)),
+                Err(e) => Err(e),
+            }
+        }
+    }
+    impl TryFrom<u64> for CheckI16 {
+        type Error = <i16 as TryFrom<u64>>::Error;
+        fn try_from(u: u64) -> Result<CheckI16, Self::Error> {
+            match <i16>::try_from(u) {
+                Ok(val) => Ok(Self(val)),
+                Err(e) => Err(e),
+            }
+        }
+    }
+    impl TryFrom<i64> for CheckI16 {
+        type Error = <i16 as TryFrom<i64>>::Error;
+        fn try_from(u: i64) -> Result<CheckI16, Self::Error> {
+            match <i16>::try_from(u) {
+                Ok(val) => Ok(Self(val)),
+                Err(e) => Err(e),
+            }
+        }
+    }
+    impl TryFrom<u128> for CheckI16 {
+        type Error = <i16 as TryFrom<u128>>::Error;
+        fn try_from(u: u128) -> Result<CheckI16, Self::Error> {
+            match <i16>::try_from(u) {
+                Ok(val) => Ok(Self(val)),
+                Err(e) => Err(e),
+            }
+        }
+    }
+    impl TryFrom<i128> for CheckI16 {
+        type Error = <i16 as TryFrom<i128>>::Error;
+        fn try_from(u: i128) -> Result<CheckI16, Self::Error> {
+            match <i16>::try_from(u) {
+                Ok(val) => Ok(Self(val)),
+                Err(e) => Err(e),
+            }
+        }
+    }
+    impl TryFrom<usize> for CheckI16 {
+        type Error = <i16 as TryFrom<usize>>::Error;
+        fn try_from(u: usize) -> Result<CheckI16, Self::Error> {
+            match <i16>::try_from(u) {
+                Ok(val) => Ok(Self(val)),
+                Err(e) => Err(e),
+            }
+        }
+    }
+    impl TryFrom<isize> for CheckI16 {
+        type Error = <i16 as TryFrom<isize>>::Error;
+        fn try_from(u: isize) -> Result<CheckI16, Self::Error> {
+            match <i16>::try_from(u) {
+                Ok(val) => Ok(Self(val)),
+                Err(e) => Err(e),
+            }
+        }
+    }
+    impl TryFrom<i8> for CheckU32 {
+        type Error = <u32 as TryFrom<i8>>::Error;
+        fn try_from(u: i8) -> Result<CheckU32, Self::Error> {
+            match <u32>::try_from(u) {
+                Ok(val) => Ok(Self(val)),
+                Err(e) => Err(e),
+            }
+        }
+    }
+    impl TryFrom<i16> for CheckU32 {
+        type Error = <u32 as TryFrom<i16>>::Error;
+        fn try_from(u: i16) -> Result<CheckU32, Self::Error> {
+            match <u32>::try_from(u) {
+                Ok(val) => Ok(Self(val)),
+                Err(e) => Err(e),
+            }
+        }
+    }
+    impl TryFrom<u32> for CheckU32 {
+        type Error = <u32 as TryFrom<u32>>::Error;
+        fn try_from(u: u32) -> Result<CheckU32, Self::Error> {
+            match <u32>::try_from(u) {
+                Ok(val) => Ok(Self(val)),
+                Err(e) => Err(e),
+            }
+        }
+    }
+    impl TryFrom<i32> for CheckU32 {
+        type Error = <u32 as TryFrom<i32>>::Error;
+        fn try_from(u: i32) -> Result<CheckU32, Self::Error> {
+            match <u32>::try_from(u) {
+                Ok(val) => Ok(Self(val)),
+                Err(e) => Err(e),
+            }
+        }
+    }
+    impl TryFrom<u64> for CheckU32 {
+        type Error = <u32 as TryFrom<u64>>::Error;
+        fn try_from(u: u64) -> Result<CheckU32, Self::Error> {
+            match <u32>::try_from(u) {
+                Ok(val) => Ok(Self(val)),
+                Err(e) => Err(e),
+            }
+        }
+    }
+    impl TryFrom<i64> for CheckU32 {
+        type Error = <u32 as TryFrom<i64>>::Error;
+        fn try_from(u: i64) -> Result<CheckU32, Self::Error> {
+            match <u32>::try_from(u) {
+                Ok(val) => Ok(Self(val)),
+                Err(e) => Err(e),
+            }
+        }
+    }
+    impl TryFrom<u128> for CheckU32 {
+        type Error = <u32 as TryFrom<u128>>::Error;
+        fn try_from(u: u128) -> Result<CheckU32, Self::Error> {
+            match <u32>::try_from(u) {
+                Ok(val) => Ok(Self(val)),
+                Err(e) => Err(e),
+            }
+        }
+    }
+    impl TryFrom<i128> for CheckU32 {
+        type Error = <u32 as TryFrom<i128>>::Error;
+        fn try_from(u: i128) -> Result<CheckU32, Self::Error> {
+            match <u32>::try_from(u) {
+                Ok(val) => Ok(Self(val)),
+                Err(e) => Err(e),
+            }
+        }
+    }
+    impl TryFrom<usize> for CheckU32 {
+        type Error = <u32 as TryFrom<usize>>::Error;
+        fn try_from(u: usize) -> Result<CheckU32, Self::Error> {
+            match <u32>::try_from(u) {
+                Ok(val) => Ok(Self(val)),
+                Err(e) => Err(e),
+            }
+        }
+    }
+    impl TryFrom<isize> for CheckU32 {
+        type Error = <u32 as TryFrom<isize>>::Error;
+        fn try_from(u: isize) -> Result<CheckU32, Self::Error> {
+            match <u32>::try_from(u) {
+                Ok(val) => Ok(Self(val)),
+                Err(e) => Err(e),
+            }
+        }
+    }
+    impl TryFrom<u8> for CheckI32 {
+        type Error = <i32 as TryFrom<u8>>::Error;
+        fn try_from(u: u8) -> Result<CheckI32, Self::Error> {
+            match <i32>::try_from(u) {
+                Ok(val) => Ok(Self(val)),
+                Err(e) => Err(e),
+            }
+        }
+    }
+    impl TryFrom<u16> for CheckI32 {
+        type Error = <i32 as TryFrom<u16>>::Error;
+        fn try_from(u: u16) -> Result<CheckI32, Self::Error> {
+            match <i32>::try_from(u) {
+                Ok(val) => Ok(Self(val)),
+                Err(e) => Err(e),
+            }
+        }
+    }
+    impl TryFrom<u32> for CheckI32 {
+        type Error = <i32 as TryFrom<u32>>::Error;
+        fn try_from(u: u32) -> Result<CheckI32, Self::Error> {
+            match <i32>::try_from(u) {
+                Ok(val) => Ok(Self(val)),
+                Err(e) => Err(e),
+            }
+        }
+    }
+    impl TryFrom<i32> for CheckI32 {
+        type Error = <i32 as TryFrom<i32>>::Error;
+        fn try_from(u: i32) -> Result<CheckI32, Self::Error> {
+            match <i32>::try_from(u) {
+                Ok(val) => Ok(Self(val)),
+                Err(e) => Err(e),
+            }
+        }
+    }
+    impl TryFrom<u64> for CheckI32 {
+        type Error = <i32 as TryFrom<u64>>::Error;
+        fn try_from(u: u64) -> Result<CheckI32, Self::Error> {
+            match <i32>::try_from(u) {
+                Ok(val) => Ok(Self(val)),
+                Err(e) => Err(e),
+            }
+        }
+    }
+    impl TryFrom<i64> for CheckI32 {
+        type Error = <i32 as TryFrom<i64>>::Error;
+        fn try_from(u: i64) -> Result<CheckI32, Self::Error> {
+            match <i32>::try_from(u) {
+                Ok(val) => Ok(Self(val)),
+                Err(e) => Err(e),
+            }
+        }
+    }
+    impl TryFrom<u128> for CheckI32 {
+        type Error = <i32 as TryFrom<u128>>::Error;
+        fn try_from(u: u128) -> Result<CheckI32, Self::Error> {
+            match <i32>::try_from(u) {
+                Ok(val) => Ok(Self(val)),
+                Err(e) => Err(e),
+            }
+        }
+    }
+    impl TryFrom<i128> for CheckI32 {
+        type Error = <i32 as TryFrom<i128>>::Error;
+        fn try_from(u: i128) -> Result<CheckI32, Self::Error> {
+            match <i32>::try_from(u) {
+                Ok(val) => Ok(Self(val)),
+                Err(e) => Err(e),
+            }
+        }
+    }
+    impl TryFrom<usize> for CheckI32 {
+        type Error = <i32 as TryFrom<usize>>::Error;
+        fn try_from(u: usize) -> Result<CheckI32, Self::Error> {
+            match <i32>::try_from(u) {
+                Ok(val) => Ok(Self(val)),
+                Err(e) => Err(e),
+            }
+        }
+    }
+    impl TryFrom<isize> for CheckI32 {
+        type Error = <i32 as TryFrom<isize>>::Error;
+        fn try_from(u: isize) -> Result<CheckI32, Self::Error> {
+            match <i32>::try_from(u) {
+                Ok(val) => Ok(Self(val)),
+                Err(e) => Err(e),
+            }
+        }
+    }
+    impl TryFrom<i8> for CheckU64 {
+        type Error = <u64 as TryFrom<i8>>::Error;
+        fn try_from(u: i8) -> Result<CheckU64, Self::Error> {
+            match <u64>::try_from(u) {
+                Ok(val) => Ok(Self(val)),
+                Err(e) => Err(e),
+            }
+        }
+    }
+    impl TryFrom<i16> for CheckU64 {
+        type Error = <u64 as TryFrom<i16>>::Error;
+        fn try_from(u: i16) -> Result<CheckU64, Self::Error> {
+            match <u64>::try_from(u) {
+                Ok(val) => Ok(Self(val)),
+                Err(e) => Err(e),
+            }
+        }
+    }
+    impl TryFrom<i32> for CheckU64 {
+        type Error = <u64 as TryFrom<i32>>::Error;
+        fn try_from(u: i32) -> Result<CheckU64, Self::Error> {
+            match <u64>::try_from(u) {
+                Ok(val) => Ok(Self(val)),
+                Err(e) => Err(e),
+            }
+        }
+    }
+    impl TryFrom<u64> for CheckU64 {
+        type Error = <u64 as TryFrom<u64>>::Error;
+        fn try_from(u: u64) -> Result<CheckU64, Self::Error> {
+            match <u64>::try_from(u) {
+                Ok(val) => Ok(Self(val)),
+                Err(e) => Err(e),
+            }
+        }
+    }
+    impl TryFrom<i64> for CheckU64 {
+        type Error = <u64 as TryFrom<i64>>::Error;
+        fn try_from(u: i64) -> Result<CheckU64, Self::Error> {
+            match <u64>::try_from(u) {
+                Ok(val) => Ok(Self(val)),
+                Err(e) => Err(e),
+            }
+        }
+    }
+    impl TryFrom<u128> for CheckU64 {
+        type Error = <u64 as TryFrom<u128>>::Error;
+        fn try_from(u: u128) -> Result<CheckU64, Self::Error> {
+            match <u64>::try_from(u) {
+                Ok(val) => Ok(Self(val)),
+                Err(e) => Err(e),
+            }
+        }
+    }
+    impl TryFrom<i128> for CheckU64 {
+        type Error = <u64 as TryFrom<i128>>::Error;
+        fn try_from(u: i128) -> Result<CheckU64, Self::Error> {
+            match <u64>::try_from(u) {
+                Ok(val) => Ok(Self(val)),
+                Err(e) => Err(e),
+            }
+        }
+    }
+    impl TryFrom<usize> for CheckU64 {
+        type Error = <u64 as TryFrom<usize>>::Error;
+        fn try_from(u: usize) -> Result<CheckU64, Self::Error> {
+            match <u64>::try_from(u) {
+                Ok(val) => Ok(Self(val)),
+                Err(e) => Err(e),
+            }
+        }
+    }
+    impl TryFrom<isize> for CheckU64 {
+        type Error = <u64 as TryFrom<isize>>::Error;
+        fn try_from(u: isize) -> Result<CheckU64, Self::Error> {
+            match <u64>::try_from(u) {
+                Ok(val) => Ok(Self(val)),
+                Err(e) => Err(e),
+            }
+        }
+    }
+    impl TryFrom<u8> for CheckI64 {
+        type Error = <i64 as TryFrom<u8>>::Error;
+        fn try_from(u: u8) -> Result<CheckI64, Self::Error> {
+            match <i64>::try_from(u) {
+                Ok(val) => Ok(Self(val)),
+                Err(e) => Err(e),
+            }
+        }
+    }
+    impl TryFrom<u16> for CheckI64 {
+        type Error = <i64 as TryFrom<u16>>::Error;
+        fn try_from(u: u16) -> Result<CheckI64, Self::Error> {
+            match <i64>::try_from(u) {
+                Ok(val) => Ok(Self(val)),
+                Err(e) => Err(e),
+            }
+        }
+    }
+    impl TryFrom<u32> for CheckI64 {
+        type Error = <i64 as TryFrom<u32>>::Error;
+        fn try_from(u: u32) -> Result<CheckI64, Self::Error> {
+            match <i64>::try_from(u) {
+                Ok(val) => Ok(Self(val)),
+                Err(e) => Err(e),
+            }
+        }
+    }
+    impl TryFrom<u64> for CheckI64 {
+        type Error = <i64 as TryFrom<u64>>::Error;
+        fn try_from(u: u64) -> Result<CheckI64, Self::Error> {
+            match <i64>::try_from(u) {
+                Ok(val) => Ok(Self(val)),
+                Err(e) => Err(e),
+            }
+        }
+    }
+    impl TryFrom<i64> for CheckI64 {
+        type Error = <i64 as TryFrom<i64>>::Error;
+        fn try_from(u: i64) -> Result<CheckI64, Self::Error> {
+            match <i64>::try_from(u) {
+                Ok(val) => Ok(Self(val)),
+                Err(e) => Err(e),
+            }
+        }
+    }
+    impl TryFrom<u128> for CheckI64 {
+        type Error = <i64 as TryFrom<u128>>::Error;
+        fn try_from(u: u128) -> Result<CheckI64, Self::Error> {
+            match <i64>::try_from(u) {
+                Ok(val) => Ok(Self(val)),
+                Err(e) => Err(e),
+            }
+        }
+    }
+    impl TryFrom<i128> for CheckI64 {
+        type Error = <i64 as TryFrom<i128>>::Error;
+        fn try_from(u: i128) -> Result<CheckI64, Self::Error> {
+            match <i64>::try_from(u) {
+                Ok(val) => Ok(Self(val)),
+                Err(e) => Err(e),
+            }
+        }
+    }
+    impl TryFrom<usize> for CheckI64 {
+        type Error = <i64 as TryFrom<usize>>::Error;
+        fn try_from(u: usize) -> Result<CheckI64, Self::Error> {
+            match <i64>::try_from(u) {
+                Ok(val) => Ok(Self(val)),
+                Err(e) => Err(e),
+            }
+        }
+    }
+    impl TryFrom<isize> for CheckI64 {
+        type Error = <i64 as TryFrom<isize>>::Error;
+        fn try_from(u: isize) -> Result<CheckI64, Self::Error> {
+            match <i64>::try_from(u) {
+                Ok(val) => Ok(Self(val)),
+                Err(e) => Err(e),
+            }
+        }
+    }
+    impl TryFrom<i8> for CheckU128 {
+        type Error = <u128 as TryFrom<i8>>::Error;
+        fn try_from(u: i8) -> Result<CheckU128, Self::Error> {
+            match <u128>::try_from(u) {
+                Ok(val) => Ok(Self(val)),
+                Err(e) => Err(e),
+            }
+        }
+    }
+    impl TryFrom<i16> for CheckU128 {
+        type Error = <u128 as TryFrom<i16>>::Error;
+        fn try_from(u: i16) -> Result<CheckU128, Self::Error> {
+            match <u128>::try_from(u) {
+                Ok(val) => Ok(Self(val)),
+                Err(e) => Err(e),
+            }
+        }
+    }
+    impl TryFrom<i32> for CheckU128 {
+        type Error = <u128 as TryFrom<i32>>::Error;
+        fn try_from(u: i32) -> Result<CheckU128, Self::Error> {
+            match <u128>::try_from(u) {
+                Ok(val) => Ok(Self(val)),
+                Err(e) => Err(e),
+            }
+        }
+    }
+    impl TryFrom<i64> for CheckU128 {
+        type Error = <u128 as TryFrom<i64>>::Error;
+        fn try_from(u: i64) -> Result<CheckU128, Self::Error> {
+            match <u128>::try_from(u) {
+                Ok(val) => Ok(Self(val)),
+                Err(e) => Err(e),
+            }
+        }
+    }
+    impl TryFrom<u128> for CheckU128 {
+        type Error = <u128 as TryFrom<u128>>::Error;
+        fn try_from(u: u128) -> Result<CheckU128, Self::Error> {
+            match <u128>::try_from(u) {
+                Ok(val) => Ok(Self(val)),
+                Err(e) => Err(e),
+            }
+        }
+    }
+    impl TryFrom<i128> for CheckU128 {
+        type Error = <u128 as TryFrom<i128>>::Error;
+        fn try_from(u: i128) -> Result<CheckU128, Self::Error> {
+            match <u128>::try_from(u) {
+                Ok(val) => Ok(Self(val)),
+                Err(e) => Err(e),
+            }
+        }
+    }
+    impl TryFrom<usize> for CheckU128 {
+        type Error = <u128 as TryFrom<usize>>::Error;
+        fn try_from(u: usize) -> Result<CheckU128, Self::Error> {
+            match <u128>::try_from(u) {
+                Ok(val) => Ok(Self(val)),
+                Err(e) => Err(e),
+            }
+        }
+    }
+    impl TryFrom<isize> for CheckU128 {
+        type Error = <u128 as TryFrom<isize>>::Error;
+        fn try_from(u: isize) -> Result<CheckU128, Self::Error> {
+            match <u128>::try_from(u) {
+                Ok(val) => Ok(Self(val)),
+                Err(e) => Err(e),
+            }
+        }
+    }
+    impl TryFrom<u8> for CheckI128 {
+        type Error = <i128 as TryFrom<u8>>::Error;
+        fn try_from(u: u8) -> Result<CheckI128, Self::Error> {
+            match <i128>::try_from(u) {
+                Ok(val) => Ok(Self(val)),
+                Err(e) => Err(e),
+            }
+        }
+    }
+    impl TryFrom<u16> for CheckI128 {
+        type Error = <i128 as TryFrom<u16>>::Error;
+        fn try_from(u: u16) -> Result<CheckI128, Self::Error> {
+            match <i128>::try_from(u) {
+                Ok(val) => Ok(Self(val)),
+                Err(e) => Err(e),
+            }
+        }
+    }
+    impl TryFrom<u32> for CheckI128 {
+        type Error = <i128 as TryFrom<u32>>::Error;
+        fn try_from(u: u32) -> Result<CheckI128, Self::Error> {
+            match <i128>::try_from(u) {
+                Ok(val) => Ok(Self(val)),
+                Err(e) => Err(e),
+            }
+        }
+    }
+    impl TryFrom<u64> for CheckI128 {
+        type Error = <i128 as TryFrom<u64>>::Error;
+        fn try_from(u: u64) -> Result<CheckI128, Self::Error> {
+            match <i128>::try_from(u) {
+                Ok(val) => Ok(Self(val)),
+                Err(e) => Err(e),
+            }
+        }
+    }
+    impl TryFrom<u128> for CheckI128 {
+        type Error = <i128 as TryFrom<u128>>::Error;
+        fn try_from(u: u128) -> Result<CheckI128, Self::Error> {
+            match <i128>::try_from(u) {
+                Ok(val) => Ok(Self(val)),
+                Err(e) => Err(e),
+            }
+        }
+    }
+    impl TryFrom<i128> for CheckI128 {
+        type Error = <i128 as TryFrom<i128>>::Error;
+        fn try_from(u: i128) -> Result<CheckI128, Self::Error> {
+            match <i128>::try_from(u) {
+                Ok(val) => Ok(Self(val)),
+                Err(e) => Err(e),
+            }
+        }
+    }
+    impl TryFrom<usize> for CheckI128 {
+        type Error = <i128 as TryFrom<usize>>::Error;
+        fn try_from(u: usize) -> Result<CheckI128, Self::Error> {
+            match <i128>::try_from(u) {
+                Ok(val) => Ok(Self(val)),
+                Err(e) => Err(e),
+            }
+        }
+    }
+    impl TryFrom<isize> for CheckI128 {
+        type Error = <i128 as TryFrom<isize>>::Error;
+        fn try_from(u: isize) -> Result<CheckI128, Self::Error> {
+            match <i128>::try_from(u) {
+                Ok(val) => Ok(Self(val)),
+                Err(e) => Err(e),
+            }
+        }
+    }
+    impl TryFrom<i8> for CheckUsize {
+        type Error = <usize as TryFrom<i8>>::Error;
+        fn try_from(u: i8) -> Result<CheckUsize, Self::Error> {
+            match <usize>::try_from(u) {
+                Ok(val) => Ok(Self(val)),
+                Err(e) => Err(e),
+            }
+        }
+    }
+    impl TryFrom<i16> for CheckUsize {
+        type Error = <usize as TryFrom<i16>>::Error;
+        fn try_from(u: i16) -> Result<CheckUsize, Self::Error> {
+            match <usize>::try_from(u) {
+                Ok(val) => Ok(Self(val)),
+                Err(e) => Err(e),
+            }
+        }
+    }
+    impl TryFrom<u32> for CheckUsize {
+        type Error = <usize as TryFrom<u32>>::Error;
+        fn try_from(u: u32) -> Result<CheckUsize, Self::Error> {
+            match <usize>::try_from(u) {
+                Ok(val) => Ok(Self(val)),
+                Err(e) => Err(e),
+            }
+        }
+    }
+    impl TryFrom<i32> for CheckUsize {
+        type Error = <usize as TryFrom<i32>>::Error;
+        fn try_from(u: i32) -> Result<CheckUsize, Self::Error> {
+            match <usize>::try_from(u) {
+                Ok(val) => Ok(Self(val)),
+                Err(e) => Err(e),
+            }
+        }
+    }
+    impl TryFrom<u64> for CheckUsize {
+        type Error = <usize as TryFrom<u64>>::Error;
+        fn try_from(u: u64) -> Result<CheckUsize, Self::Error> {
+            match <usize>::try_from(u) {
+                Ok(val) => Ok(Self(val)),
+                Err(e) => Err(e),
+            }
+        }
+    }
+    impl TryFrom<i64> for CheckUsize {
+        type Error = <usize as TryFrom<i64>>::Error;
+        fn try_from(u: i64) -> Result<CheckUsize, Self::Error> {
+            match <usize>::try_from(u) {
+                Ok(val) => Ok(Self(val)),
+                Err(e) => Err(e),
+            }
+        }
+    }
+    impl TryFrom<i128> for CheckUsize {
+        type Error = <usize as TryFrom<i128>>::Error;
+        fn try_from(u: i128) -> Result<CheckUsize, Self::Error> {
+            match <usize>::try_from(u) {
+                Ok(val) => Ok(Self(val)),
+                Err(e) => Err(e),
+            }
+        }
+    }
+    impl TryFrom<u128> for CheckUsize {
+        type Error = <usize as TryFrom<u128>>::Error;
+        fn try_from(u: u128) -> Result<CheckUsize, Self::Error> {
+            match <usize>::try_from(u) {
+                Ok(val) => Ok(Self(val)),
+                Err(e) => Err(e),
+            }
+        }
+    }
+    impl TryFrom<usize> for CheckUsize {
+        type Error = <usize as TryFrom<usize>>::Error;
+        fn try_from(u: usize) -> Result<CheckUsize, Self::Error> {
+            match <usize>::try_from(u) {
+                Ok(val) => Ok(Self(val)),
+                Err(e) => Err(e),
+            }
+        }
+    }
+    impl TryFrom<isize> for CheckUsize {
+        type Error = <usize as TryFrom<isize>>::Error;
+        fn try_from(u: isize) -> Result<CheckUsize, Self::Error> {
+            match <usize>::try_from(u) {
+                Ok(val) => Ok(Self(val)),
+                Err(e) => Err(e),
+            }
+        }
+    }
+    impl TryFrom<u16> for CheckIsize {
+        type Error = <isize as TryFrom<u16>>::Error;
+        fn try_from(u: u16) -> Result<CheckIsize, Self::Error> {
+            match <isize>::try_from(u) {
+                Ok(val) => Ok(Self(val)),
+                Err(e) => Err(e),
+            }
+        }
+    }
+    impl TryFrom<u32> for CheckIsize {
+        type Error = <isize as TryFrom<u32>>::Error;
+        fn try_from(u: u32) -> Result<CheckIsize, Self::Error> {
+            match <isize>::try_from(u) {
+                Ok(val) => Ok(Self(val)),
+                Err(e) => Err(e),
+            }
+        }
+    }
+    impl TryFrom<i32> for CheckIsize {
+        type Error = <isize as TryFrom<i32>>::Error;
+        fn try_from(u: i32) -> Result<CheckIsize, Self::Error> {
+            match <isize>::try_from(u) {
+                Ok(val) => Ok(Self(val)),
+                Err(e) => Err(e),
+            }
+        }
+    }
+    impl TryFrom<u64> for CheckIsize {
+        type Error = <isize as TryFrom<u64>>::Error;
+        fn try_from(u: u64) -> Result<CheckIsize, Self::Error> {
+            match <isize>::try_from(u) {
+                Ok(val) => Ok(Self(val)),
+                Err(e) => Err(e),
+            }
+        }
+    }
+    impl TryFrom<i64> for CheckIsize {
+        type Error = <isize as TryFrom<i64>>::Error;
+        fn try_from(u: i64) -> Result<CheckIsize, Self::Error> {
+            match <isize>::try_from(u) {
+                Ok(val) => Ok(Self(val)),
+                Err(e) => Err(e),
+            }
+        }
+    }
+    impl TryFrom<u128> for CheckIsize {
+        type Error = <isize as TryFrom<u128>>::Error;
+        fn try_from(u: u128) -> Result<CheckIsize, Self::Error> {
+            match <isize>::try_from(u) {
+                Ok(val) => Ok(Self(val)),
+                Err(e) => Err(e),
+            }
+        }
+    }
+    impl TryFrom<i128> for CheckIsize {
+        type Error = <isize as TryFrom<i128>>::Error;
+        fn try_from(u: i128) -> Result<CheckIsize, Self::Error> {
+            match <isize>::try_from(u) {
+                Ok(val) => Ok(Self(val)),
+                Err(e) => Err(e),
+            }
+        }
+    }
+    impl TryFrom<usize> for CheckIsize {
+        type Error = <isize as TryFrom<usize>>::Error;
+        fn try_from(u: usize) -> Result<CheckIsize, Self::Error> {
+            match <isize>::try_from(u) {
+                Ok(val) => Ok(Self(val)),
+                Err(e) => Err(e),
+            }
+        }
+    }
+    impl TryFrom<isize> for CheckIsize {
+        type Error = <isize as TryFrom<isize>>::Error;
+        fn try_from(u: isize) -> Result<CheckIsize, Self::Error> {
+            match <isize>::try_from(u) {
+                Ok(val) => Ok(Self(val)),
+                Err(e) => Err(e),
+            }
+        }
+    }
+    impl TryFrom<CheckI8> for CheckU8 {
+        type Error = <u8 as TryFrom<i8>>::Error;
+        fn try_from(u: CheckI8) -> Result<CheckU8, Self::Error> {
+            match <u8>::try_from(u.0) {
+                Ok(val) => Ok(Self(val)),
+                Err(e) => Err(e),
+            }
+        }
+    }
+    impl TryFrom<CheckI16> for CheckU8 {
+        type Error = <u8 as TryFrom<i16>>::Error;
+        fn try_from(u: CheckI16) -> Result<CheckU8, Self::Error> {
+            match <u8>::try_from(u.0) {
+                Ok(val) => Ok(Self(val)),
+                Err(e) => Err(e),
+            }
+        }
+    }
+    impl TryFrom<CheckI32> for CheckU8 {
+        type Error = <u8 as TryFrom<i32>>::Error;
+        fn try_from(u: CheckI32) -> Result<CheckU8, Self::Error> {
+            match <u8>::try_from(u.0) {
+                Ok(val) => Ok(Self(val)),
+                Err(e) => Err(e),
+            }
+        }
+    }
+    impl TryFrom<CheckI64> for CheckU8 {
+        type Error = <u8 as TryFrom<i64>>::Error;
+        fn try_from(u: CheckI64) -> Result<CheckU8, Self::Error> {
+            match <u8>::try_from(u.0) {
+                Ok(val) => Ok(Self(val)),
+                Err(e) => Err(e),
+            }
+        }
+    }
+    impl TryFrom<CheckI128> for CheckU8 {
+        type Error = <u8 as TryFrom<i128>>::Error;
+        fn try_from(u: CheckI128) -> Result<CheckU8, Self::Error> {
+            match <u8>::try_from(u.0) {
+                Ok(val) => Ok(Self(val)),
+                Err(e) => Err(e),
+            }
+        }
+    }
+    impl TryFrom<CheckU16> for CheckU8 {
+        type Error = <u8 as TryFrom<u16>>::Error;
+        fn try_from(u: CheckU16) -> Result<CheckU8, Self::Error> {
+            match <u8>::try_from(u.0) {
+                Ok(val) => Ok(Self(val)),
+                Err(e) => Err(e),
+            }
+        }
+    }
+    impl TryFrom<CheckU32> for CheckU8 {
+        type Error = <u8 as TryFrom<u32>>::Error;
+        fn try_from(u: CheckU32) -> Result<CheckU8, Self::Error> {
+            match <u8>::try_from(u.0) {
+                Ok(val) => Ok(Self(val)),
+                Err(e) => Err(e),
+            }
+        }
+    }
+    impl TryFrom<CheckU64> for CheckU8 {
+        type Error = <u8 as TryFrom<u64>>::Error;
+        fn try_from(u: CheckU64) -> Result<CheckU8, Self::Error> {
+            match <u8>::try_from(u.0) {
+                Ok(val) => Ok(Self(val)),
+                Err(e) => Err(e),
+            }
+        }
+    }
+    impl TryFrom<CheckU128> for CheckU8 {
+        type Error = <u8 as TryFrom<u128>>::Error;
+        fn try_from(u: CheckU128) -> Result<CheckU8, Self::Error> {
+            match <u8>::try_from(u.0) {
+                Ok(val) => Ok(Self(val)),
+                Err(e) => Err(e),
+            }
+        }
+    }
+    impl TryFrom<CheckUsize> for CheckU8 {
+        type Error = <u8 as TryFrom<usize>>::Error;
+        fn try_from(u: CheckUsize) -> Result<CheckU8, Self::Error> {
+            match <u8>::try_from(u.0) {
+                Ok(val) => Ok(Self(val)),
+                Err(e) => Err(e),
+            }
+        }
+    }
+    impl TryFrom<CheckIsize> for CheckU8 {
+        type Error = <u8 as TryFrom<isize>>::Error;
+        fn try_from(u: CheckIsize) -> Result<CheckU8, Self::Error> {
+            match <u8>::try_from(u.0) {
+                Ok(val) => Ok(Self(val)),
+                Err(e) => Err(e),
+            }
+        }
+    }
+    impl TryFrom<CheckU8> for CheckI8 {
+        type Error = <i8 as TryFrom<u8>>::Error;
+        fn try_from(u: CheckU8) -> Result<CheckI8, Self::Error> {
+            match <i8>::try_from(u.0) {
+                Ok(val) => Ok(Self(val)),
+                Err(e) => Err(e),
+            }
+        }
+    }
+    impl TryFrom<CheckU16> for CheckI8 {
+        type Error = <i8 as TryFrom<u16>>::Error;
+        fn try_from(u: CheckU16) -> Result<CheckI8, Self::Error> {
+            match <i8>::try_from(u.0) {
+                Ok(val) => Ok(Self(val)),
+                Err(e) => Err(e),
+            }
+        }
+    }
+    impl TryFrom<CheckU32> for CheckI8 {
+        type Error = <i8 as TryFrom<u32>>::Error;
+        fn try_from(u: CheckU32) -> Result<CheckI8, Self::Error> {
+            match <i8>::try_from(u.0) {
+                Ok(val) => Ok(Self(val)),
+                Err(e) => Err(e),
+            }
+        }
+    }
+    impl TryFrom<CheckU64> for CheckI8 {
+        type Error = <i8 as TryFrom<u64>>::Error;
+        fn try_from(u: CheckU64) -> Result<CheckI8, Self::Error> {
+            match <i8>::try_from(u.0) {
+                Ok(val) => Ok(Self(val)),
+                Err(e) => Err(e),
+            }
+        }
+    }
+    impl TryFrom<CheckU128> for CheckI8 {
+        type Error = <i8 as TryFrom<u128>>::Error;
+        fn try_from(u: CheckU128) -> Result<CheckI8, Self::Error> {
+            match <i8>::try_from(u.0) {
+                Ok(val) => Ok(Self(val)),
+                Err(e) => Err(e),
+            }
+        }
+    }
+    impl TryFrom<CheckI16> for CheckI8 {
+        type Error = <i8 as TryFrom<i16>>::Error;
+        fn try_from(u: CheckI16) -> Result<CheckI8, Self::Error> {
+            match <i8>::try_from(u.0) {
+                Ok(val) => Ok(Self(val)),
+                Err(e) => Err(e),
+            }
+        }
+    }
+    impl TryFrom<CheckI32> for CheckI8 {
+        type Error = <i8 as TryFrom<i32>>::Error;
+        fn try_from(u: CheckI32) -> Result<CheckI8, Self::Error> {
+            match <i8>::try_from(u.0) {
+                Ok(val) => Ok(Self(val)),
+                Err(e) => Err(e),
+            }
+        }
+    }
+    impl TryFrom<CheckI64> for CheckI8 {
+        type Error = <i8 as TryFrom<i64>>::Error;
+        fn try_from(u: CheckI64) -> Result<CheckI8, Self::Error> {
+            match <i8>::try_from(u.0) {
+                Ok(val) => Ok(Self(val)),
+                Err(e) => Err(e),
+            }
+        }
+    }
+    impl TryFrom<CheckI128> for CheckI8 {
+        type Error = <i8 as TryFrom<i128>>::Error;
+        fn try_from(u: CheckI128) -> Result<CheckI8, Self::Error> {
+            match <i8>::try_from(u.0) {
+                Ok(val) => Ok(Self(val)),
+                Err(e) => Err(e),
+            }
+        }
+    }
+    impl TryFrom<CheckUsize> for CheckI8 {
+        type Error = <i8 as TryFrom<usize>>::Error;
+        fn try_from(u: CheckUsize) -> Result<CheckI8, Self::Error> {
+            match <i8>::try_from(u.0) {
+                Ok(val) => Ok(Self(val)),
+                Err(e) => Err(e),
+            }
+        }
+    }
+    impl TryFrom<CheckIsize> for CheckI8 {
+        type Error = <i8 as TryFrom<isize>>::Error;
+        fn try_from(u: CheckIsize) -> Result<CheckI8, Self::Error> {
+            match <i8>::try_from(u.0) {
+                Ok(val) => Ok(Self(val)),
+                Err(e) => Err(e),
+            }
+        }
+    }
+    impl TryFrom<CheckI8> for CheckU16 {
+        type Error = <u16 as TryFrom<i8>>::Error;
+        fn try_from(u: CheckI8) -> Result<CheckU16, Self::Error> {
+            match <u16>::try_from(u.0) {
+                Ok(val) => Ok(Self(val)),
+                Err(e) => Err(e),
+            }
+        }
+    }
+    impl TryFrom<CheckI16> for CheckU16 {
+        type Error = <u16 as TryFrom<i16>>::Error;
+        fn try_from(u: CheckI16) -> Result<CheckU16, Self::Error> {
+            match <u16>::try_from(u.0) {
+                Ok(val) => Ok(Self(val)),
+                Err(e) => Err(e),
+            }
+        }
+    }
+    impl TryFrom<CheckI32> for CheckU16 {
+        type Error = <u16 as TryFrom<i32>>::Error;
+        fn try_from(u: CheckI32) -> Result<CheckU16, Self::Error> {
+            match <u16>::try_from(u.0) {
+                Ok(val) => Ok(Self(val)),
+                Err(e) => Err(e),
+            }
+        }
+    }
+    impl TryFrom<CheckI64> for CheckU16 {
+        type Error = <u16 as TryFrom<i64>>::Error;
+        fn try_from(u: CheckI64) -> Result<CheckU16, Self::Error> {
+            match <u16>::try_from(u.0) {
+                Ok(val) => Ok(Self(val)),
+                Err(e) => Err(e),
+            }
+        }
+    }
+    impl TryFrom<CheckI128> for CheckU16 {
+        type Error = <u16 as TryFrom<i128>>::Error;
+        fn try_from(u: CheckI128) -> Result<CheckU16, Self::Error> {
+            match <u16>::try_from(u.0) {
+                Ok(val) => Ok(Self(val)),
+                Err(e) => Err(e),
+            }
+        }
+    }
+    impl TryFrom<CheckU32> for CheckU16 {
+        type Error = <u16 as TryFrom<u32>>::Error;
+        fn try_from(u: CheckU32) -> Result<CheckU16, Self::Error> {
+            match <u16>::try_from(u.0) {
+                Ok(val) => Ok(Self(val)),
+                Err(e) => Err(e),
+            }
+        }
+    }
+    impl TryFrom<CheckU64> for CheckU16 {
+        type Error = <u16 as TryFrom<u64>>::Error;
+        fn try_from(u: CheckU64) -> Result<CheckU16, Self::Error> {
+            match <u16>::try_from(u.0) {
+                Ok(val) => Ok(Self(val)),
+                Err(e) => Err(e),
+            }
+        }
+    }
+    impl TryFrom<CheckU128> for CheckU16 {
+        type Error = <u16 as TryFrom<u128>>::Error;
+        fn try_from(u: CheckU128) -> Result<CheckU16, Self::Error> {
+            match <u16>::try_from(u.0) {
+                Ok(val) => Ok(Self(val)),
+                Err(e) => Err(e),
+            }
+        }
+    }
+    impl TryFrom<CheckUsize> for CheckU16 {
+        type Error = <u16 as TryFrom<usize>>::Error;
+        fn try_from(u: CheckUsize) -> Result<CheckU16, Self::Error> {
+            match <u16>::try_from(u.0) {
+                Ok(val) => Ok(Self(val)),
+                Err(e) => Err(e),
+            }
+        }
+    }
+    impl TryFrom<CheckIsize> for CheckU16 {
+        type Error = <u16 as TryFrom<isize>>::Error;
+        fn try_from(u: CheckIsize) -> Result<CheckU16, Self::Error> {
+            match <u16>::try_from(u.0) {
+                Ok(val) => Ok(Self(val)),
+                Err(e) => Err(e),
+            }
+        }
+    }
+    impl TryFrom<CheckU8> for CheckI16 {
+        type Error = <i16 as TryFrom<u8>>::Error;
+        fn try_from(u: CheckU8) -> Result<CheckI16, Self::Error> {
+            match <i16>::try_from(u.0) {
+                Ok(val) => Ok(Self(val)),
+                Err(e) => Err(e),
+            }
+        }
+    }
+    impl TryFrom<CheckU16> for CheckI16 {
+        type Error = <i16 as TryFrom<u16>>::Error;
+        fn try_from(u: CheckU16) -> Result<CheckI16, Self::Error> {
+            match <i16>::try_from(u.0) {
+                Ok(val) => Ok(Self(val)),
+                Err(e) => Err(e),
+            }
+        }
+    }
+    impl TryFrom<CheckU32> for CheckI16 {
+        type Error = <i16 as TryFrom<u32>>::Error;
+        fn try_from(u: CheckU32) -> Result<CheckI16, Self::Error> {
+            match <i16>::try_from(u.0) {
+                Ok(val) => Ok(Self(val)),
+                Err(e) => Err(e),
+            }
+        }
+    }
+    impl TryFrom<CheckU64> for CheckI16 {
+        type Error = <i16 as TryFrom<u64>>::Error;
+        fn try_from(u: CheckU64) -> Result<CheckI16, Self::Error> {
+            match <i16>::try_from(u.0) {
+                Ok(val) => Ok(Self(val)),
+                Err(e) => Err(e),
+            }
+        }
+    }
+    impl TryFrom<CheckU128> for CheckI16 {
+        type Error = <i16 as TryFrom<u128>>::Error;
+        fn try_from(u: CheckU128) -> Result<CheckI16, Self::Error> {
+            match <i16>::try_from(u.0) {
+                Ok(val) => Ok(Self(val)),
+                Err(e) => Err(e),
+            }
+        }
+    }
+    impl TryFrom<CheckI32> for CheckI16 {
+        type Error = <i16 as TryFrom<i32>>::Error;
+        fn try_from(u: CheckI32) -> Result<CheckI16, Self::Error> {
+            match <i16>::try_from(u.0) {
+                Ok(val) => Ok(Self(val)),
+                Err(e) => Err(e),
+            }
+        }
+    }
+    impl TryFrom<CheckI64> for CheckI16 {
+        type Error = <i16 as TryFrom<i64>>::Error;
+        fn try_from(u: CheckI64) -> Result<CheckI16, Self::Error> {
+            match <i16>::try_from(u.0) {
+                Ok(val) => Ok(Self(val)),
+                Err(e) => Err(e),
+            }
+        }
+    }
+    impl TryFrom<CheckI128> for CheckI16 {
+        type Error = <i16 as TryFrom<i128>>::Error;
+        fn try_from(u: CheckI128) -> Result<CheckI16, Self::Error> {
+            match <i16>::try_from(u.0) {
+                Ok(val) => Ok(Self(val)),
+                Err(e) => Err(e),
+            }
+        }
+    }
+    impl TryFrom<CheckUsize> for CheckI16 {
+        type Error = <i16 as TryFrom<usize>>::Error;
+        fn try_from(u: CheckUsize) -> Result<CheckI16, Self::Error> {
+            match <i16>::try_from(u.0) {
+                Ok(val) => Ok(Self(val)),
+                Err(e) => Err(e),
+            }
+        }
+    }
+    impl TryFrom<CheckIsize> for CheckI16 {
+        type Error = <i16 as TryFrom<isize>>::Error;
+        fn try_from(u: CheckIsize) -> Result<CheckI16, Self::Error> {
+            match <i16>::try_from(u.0) {
+                Ok(val) => Ok(Self(val)),
+                Err(e) => Err(e),
+            }
+        }
+    }
+    impl TryFrom<CheckI8> for CheckU32 {
+        type Error = <u32 as TryFrom<i8>>::Error;
+        fn try_from(u: CheckI8) -> Result<CheckU32, Self::Error> {
+            match <u32>::try_from(u.0) {
+                Ok(val) => Ok(Self(val)),
+                Err(e) => Err(e),
+            }
+        }
+    }
+    impl TryFrom<CheckI16> for CheckU32 {
+        type Error = <u32 as TryFrom<i16>>::Error;
+        fn try_from(u: CheckI16) -> Result<CheckU32, Self::Error> {
+            match <u32>::try_from(u.0) {
+                Ok(val) => Ok(Self(val)),
+                Err(e) => Err(e),
+            }
+        }
+    }
+    impl TryFrom<CheckI32> for CheckU32 {
+        type Error = <u32 as TryFrom<i32>>::Error;
+        fn try_from(u: CheckI32) -> Result<CheckU32, Self::Error> {
+            match <u32>::try_from(u.0) {
+                Ok(val) => Ok(Self(val)),
+                Err(e) => Err(e),
+            }
+        }
+    }
+    impl TryFrom<CheckI64> for CheckU32 {
+        type Error = <u32 as TryFrom<i64>>::Error;
+        fn try_from(u: CheckI64) -> Result<CheckU32, Self::Error> {
+            match <u32>::try_from(u.0) {
+                Ok(val) => Ok(Self(val)),
+                Err(e) => Err(e),
+            }
+        }
+    }
+    impl TryFrom<CheckI128> for CheckU32 {
+        type Error = <u32 as TryFrom<i128>>::Error;
+        fn try_from(u: CheckI128) -> Result<CheckU32, Self::Error> {
+            match <u32>::try_from(u.0) {
+                Ok(val) => Ok(Self(val)),
+                Err(e) => Err(e),
+            }
+        }
+    }
+    impl TryFrom<CheckU64> for CheckU32 {
+        type Error = <u32 as TryFrom<u64>>::Error;
+        fn try_from(u: CheckU64) -> Result<CheckU32, Self::Error> {
+            match <u32>::try_from(u.0) {
+                Ok(val) => Ok(Self(val)),
+                Err(e) => Err(e),
+            }
+        }
+    }
+    impl TryFrom<CheckU128> for CheckU32 {
+        type Error = <u32 as TryFrom<u128>>::Error;
+        fn try_from(u: CheckU128) -> Result<CheckU32, Self::Error> {
+            match <u32>::try_from(u.0) {
+                Ok(val) => Ok(Self(val)),
+                Err(e) => Err(e),
+            }
+        }
+    }
+    impl TryFrom<CheckUsize> for CheckU32 {
+        type Error = <u32 as TryFrom<usize>>::Error;
+        fn try_from(u: CheckUsize) -> Result<CheckU32, Self::Error> {
+            match <u32>::try_from(u.0) {
+                Ok(val) => Ok(Self(val)),
+                Err(e) => Err(e),
+            }
+        }
+    }
+    impl TryFrom<CheckIsize> for CheckU32 {
+        type Error = <u32 as TryFrom<isize>>::Error;
+        fn try_from(u: CheckIsize) -> Result<CheckU32, Self::Error> {
+            match <u32>::try_from(u.0) {
+                Ok(val) => Ok(Self(val)),
+                Err(e) => Err(e),
+            }
+        }
+    }
+    impl TryFrom<CheckU8> for CheckI32 {
+        type Error = <i32 as TryFrom<u8>>::Error;
+        fn try_from(u: CheckU8) -> Result<CheckI32, Self::Error> {
+            match <i32>::try_from(u.0) {
+                Ok(val) => Ok(Self(val)),
+                Err(e) => Err(e),
+            }
+        }
+    }
+    impl TryFrom<CheckU16> for CheckI32 {
+        type Error = <i32 as TryFrom<u16>>::Error;
+        fn try_from(u: CheckU16) -> Result<CheckI32, Self::Error> {
+            match <i32>::try_from(u.0) {
+                Ok(val) => Ok(Self(val)),
+                Err(e) => Err(e),
+            }
+        }
+    }
+    impl TryFrom<CheckU32> for CheckI32 {
+        type Error = <i32 as TryFrom<u32>>::Error;
+        fn try_from(u: CheckU32) -> Result<CheckI32, Self::Error> {
+            match <i32>::try_from(u.0) {
+                Ok(val) => Ok(Self(val)),
+                Err(e) => Err(e),
+            }
+        }
+    }
+    impl TryFrom<CheckU64> for CheckI32 {
+        type Error = <i32 as TryFrom<u64>>::Error;
+        fn try_from(u: CheckU64) -> Result<CheckI32, Self::Error> {
+            match <i32>::try_from(u.0) {
+                Ok(val) => Ok(Self(val)),
+                Err(e) => Err(e),
+            }
+        }
+    }
+    impl TryFrom<CheckU128> for CheckI32 {
+        type Error = <i32 as TryFrom<u128>>::Error;
+        fn try_from(u: CheckU128) -> Result<CheckI32, Self::Error> {
+            match <i32>::try_from(u.0) {
+                Ok(val) => Ok(Self(val)),
+                Err(e) => Err(e),
+            }
+        }
+    }
+    impl TryFrom<CheckI64> for CheckI32 {
+        type Error = <i32 as TryFrom<i64>>::Error;
+        fn try_from(u: CheckI64) -> Result<CheckI32, Self::Error> {
+            match <i32>::try_from(u.0) {
+                Ok(val) => Ok(Self(val)),
+                Err(e) => Err(e),
+            }
+        }
+    }
+    impl TryFrom<CheckI128> for CheckI32 {
+        type Error = <i32 as TryFrom<i128>>::Error;
+        fn try_from(u: CheckI128) -> Result<CheckI32, Self::Error> {
+            match <i32>::try_from(u.0) {
+                Ok(val) => Ok(Self(val)),
+                Err(e) => Err(e),
+            }
+        }
+    }
+    impl TryFrom<CheckUsize> for CheckI32 {
+        type Error = <i32 as TryFrom<usize>>::Error;
+        fn try_from(u: CheckUsize) -> Result<CheckI32, Self::Error> {
+            match <i32>::try_from(u.0) {
+                Ok(val) => Ok(Self(val)),
+                Err(e) => Err(e),
+            }
+        }
+    }
+    impl TryFrom<CheckIsize> for CheckI32 {
+        type Error = <i32 as TryFrom<isize>>::Error;
+        fn try_from(u: CheckIsize) -> Result<CheckI32, Self::Error> {
+            match <i32>::try_from(u.0) {
+                Ok(val) => Ok(Self(val)),
+                Err(e) => Err(e),
+            }
+        }
+    }
+    impl TryFrom<CheckI8> for CheckU64 {
+        type Error = <u64 as TryFrom<i8>>::Error;
+        fn try_from(u: CheckI8) -> Result<CheckU64, Self::Error> {
+            match <u64>::try_from(u.0) {
+                Ok(val) => Ok(Self(val)),
+                Err(e) => Err(e),
+            }
+        }
+    }
+    impl TryFrom<CheckI16> for CheckU64 {
+        type Error = <u64 as TryFrom<i16>>::Error;
+        fn try_from(u: CheckI16) -> Result<CheckU64, Self::Error> {
+            match <u64>::try_from(u.0) {
+                Ok(val) => Ok(Self(val)),
+                Err(e) => Err(e),
+            }
+        }
+    }
+    impl TryFrom<CheckI32> for CheckU64 {
+        type Error = <u64 as TryFrom<i32>>::Error;
+        fn try_from(u: CheckI32) -> Result<CheckU64, Self::Error> {
+            match <u64>::try_from(u.0) {
+                Ok(val) => Ok(Self(val)),
+                Err(e) => Err(e),
+            }
+        }
+    }
+    impl TryFrom<CheckI64> for CheckU64 {
+        type Error = <u64 as TryFrom<i64>>::Error;
+        fn try_from(u: CheckI64) -> Result<CheckU64, Self::Error> {
+            match <u64>::try_from(u.0) {
+                Ok(val) => Ok(Self(val)),
+                Err(e) => Err(e),
+            }
+        }
+    }
+    impl TryFrom<CheckI128> for CheckU64 {
+        type Error = <u64 as TryFrom<i128>>::Error;
+        fn try_from(u: CheckI128) -> Result<CheckU64, Self::Error> {
+            match <u64>::try_from(u.0) {
+                Ok(val) => Ok(Self(val)),
+                Err(e) => Err(e),
+            }
+        }
+    }
+    impl TryFrom<CheckU128> for CheckU64 {
+        type Error = <u64 as TryFrom<u128>>::Error;
+        fn try_from(u: CheckU128) -> Result<CheckU64, Self::Error> {
+            match <u64>::try_from(u.0) {
+                Ok(val) => Ok(Self(val)),
+                Err(e) => Err(e),
+            }
+        }
+    }
+    impl TryFrom<CheckUsize> for CheckU64 {
+        type Error = <u64 as TryFrom<usize>>::Error;
+        fn try_from(u: CheckUsize) -> Result<CheckU64, Self::Error> {
+            match <u64>::try_from(u.0) {
+                Ok(val) => Ok(Self(val)),
+                Err(e) => Err(e),
+            }
+        }
+    }
+    impl TryFrom<CheckIsize> for CheckU64 {
+        type Error = <u64 as TryFrom<isize>>::Error;
+        fn try_from(u: CheckIsize) -> Result<CheckU64, Self::Error> {
+            match <u64>::try_from(u.0) {
+                Ok(val) => Ok(Self(val)),
+                Err(e) => Err(e),
+            }
+        }
+    }
+    impl TryFrom<CheckU8> for CheckI64 {
+        type Error = <i64 as TryFrom<u8>>::Error;
+        fn try_from(u: CheckU8) -> Result<CheckI64, Self::Error> {
+            match <i64>::try_from(u.0) {
+                Ok(val) => Ok(Self(val)),
+                Err(e) => Err(e),
+            }
+        }
+    }
+    impl TryFrom<CheckU16> for CheckI64 {
+        type Error = <i64 as TryFrom<u16>>::Error;
+        fn try_from(u: CheckU16) -> Result<CheckI64, Self::Error> {
+            match <i64>::try_from(u.0) {
+                Ok(val) => Ok(Self(val)),
+                Err(e) => Err(e),
+            }
+        }
+    }
+    impl TryFrom<CheckU32> for CheckI64 {
+        type Error = <i64 as TryFrom<u32>>::Error;
+        fn try_from(u: CheckU32) -> Result<CheckI64, Self::Error> {
+            match <i64>::try_from(u.0) {
+                Ok(val) => Ok(Self(val)),
+                Err(e) => Err(e),
+            }
+        }
+    }
+    impl TryFrom<CheckU64> for CheckI64 {
+        type Error = <i64 as TryFrom<u64>>::Error;
+        fn try_from(u: CheckU64) -> Result<CheckI64, Self::Error> {
+            match <i64>::try_from(u.0) {
+                Ok(val) => Ok(Self(val)),
+                Err(e) => Err(e),
+            }
+        }
+    }
+    impl TryFrom<CheckU128> for CheckI64 {
+        type Error = <i64 as TryFrom<u128>>::Error;
+        fn try_from(u: CheckU128) -> Result<CheckI64, Self::Error> {
+            match <i64>::try_from(u.0) {
+                Ok(val) => Ok(Self(val)),
+                Err(e) => Err(e),
+            }
+        }
+    }
+    impl TryFrom<CheckI128> for CheckI64 {
+        type Error = <i64 as TryFrom<i128>>::Error;
+        fn try_from(u: CheckI128) -> Result<CheckI64, Self::Error> {
+            match <i64>::try_from(u.0) {
+                Ok(val) => Ok(Self(val)),
+                Err(e) => Err(e),
+            }
+        }
+    }
+    impl TryFrom<CheckUsize> for CheckI64 {
+        type Error = <i64 as TryFrom<usize>>::Error;
+        fn try_from(u: CheckUsize) -> Result<CheckI64, Self::Error> {
+            match <i64>::try_from(u.0) {
+                Ok(val) => Ok(Self(val)),
+                Err(e) => Err(e),
+            }
+        }
+    }
+    impl TryFrom<CheckIsize> for CheckI64 {
+        type Error = <i64 as TryFrom<isize>>::Error;
+        fn try_from(u: CheckIsize) -> Result<CheckI64, Self::Error> {
+            match <i64>::try_from(u.0) {
+                Ok(val) => Ok(Self(val)),
+                Err(e) => Err(e),
+            }
+        }
+    }
+    impl TryFrom<CheckI8> for CheckU128 {
+        type Error = <u128 as TryFrom<i8>>::Error;
+        fn try_from(u: CheckI8) -> Result<CheckU128, Self::Error> {
+            match <u128>::try_from(u.0) {
+                Ok(val) => Ok(Self(val)),
+                Err(e) => Err(e),
+            }
+        }
+    }
+    impl TryFrom<CheckI16> for CheckU128 {
+        type Error = <u128 as TryFrom<i16>>::Error;
+        fn try_from(u: CheckI16) -> Result<CheckU128, Self::Error> {
+            match <u128>::try_from(u.0) {
+                Ok(val) => Ok(Self(val)),
+                Err(e) => Err(e),
+            }
+        }
+    }
+    impl TryFrom<CheckI32> for CheckU128 {
+        type Error = <u128 as TryFrom<i32>>::Error;
+        fn try_from(u: CheckI32) -> Result<CheckU128, Self::Error> {
+            match <u128>::try_from(u.0) {
+                Ok(val) => Ok(Self(val)),
+                Err(e) => Err(e),
+            }
+        }
+    }
+    impl TryFrom<CheckI64> for CheckU128 {
+        type Error = <u128 as TryFrom<i64>>::Error;
+        fn try_from(u: CheckI64) -> Result<CheckU128, Self::Error> {
+            match <u128>::try_from(u.0) {
+                Ok(val) => Ok(Self(val)),
+                Err(e) => Err(e),
+            }
+        }
+    }
+    impl TryFrom<CheckI128> for CheckU128 {
+        type Error = <u128 as TryFrom<i128>>::Error;
+        fn try_from(u: CheckI128) -> Result<CheckU128, Self::Error> {
+            match <u128>::try_from(u.0) {
+                Ok(val) => Ok(Self(val)),
+                Err(e) => Err(e),
+            }
+        }
+    }
+    impl TryFrom<CheckUsize> for CheckU128 {
+        type Error = <u128 as TryFrom<usize>>::Error;
+        fn try_from(u: CheckUsize) -> Result<CheckU128, Self::Error> {
+            match <u128>::try_from(u.0) {
+                Ok(val) => Ok(Self(val)),
+                Err(e) => Err(e),
+            }
+        }
+    }
+    impl TryFrom<CheckIsize> for CheckU128 {
+        type Error = <u128 as TryFrom<isize>>::Error;
+        fn try_from(u: CheckIsize) -> Result<CheckU128, Self::Error> {
+            match <u128>::try_from(u.0) {
+                Ok(val) => Ok(Self(val)),
+                Err(e) => Err(e),
+            }
+        }
+    }
+    impl TryFrom<CheckU8> for CheckI128 {
+        type Error = <i128 as TryFrom<u8>>::Error;
+        fn try_from(u: CheckU8) -> Result<CheckI128, Self::Error> {
+            match <i128>::try_from(u.0) {
+                Ok(val) => Ok(Self(val)),
+                Err(e) => Err(e),
+            }
+        }
+    }
+    impl TryFrom<CheckU16> for CheckI128 {
+        type Error = <i128 as TryFrom<u16>>::Error;
+        fn try_from(u: CheckU16) -> Result<CheckI128, Self::Error> {
+            match <i128>::try_from(u.0) {
+                Ok(val) => Ok(Self(val)),
+                Err(e) => Err(e),
+            }
+        }
+    }
+    impl TryFrom<CheckU32> for CheckI128 {
+        type Error = <i128 as TryFrom<u32>>::Error;
+        fn try_from(u: CheckU32) -> Result<CheckI128, Self::Error> {
+            match <i128>::try_from(u.0) {
+                Ok(val) => Ok(Self(val)),
+                Err(e) => Err(e),
+            }
+        }
+    }
+    impl TryFrom<CheckU64> for CheckI128 {
+        type Error = <i128 as TryFrom<u64>>::Error;
+        fn try_from(u: CheckU64) -> Result<CheckI128, Self::Error> {
+            match <i128>::try_from(u.0) {
+                Ok(val) => Ok(Self(val)),
+                Err(e) => Err(e),
+            }
+        }
+    }
+    impl TryFrom<CheckU128> for CheckI128 {
+        type Error = <i128 as TryFrom<u128>>::Error;
+        fn try_from(u: CheckU128) -> Result<CheckI128, Self::Error> {
+            match <i128>::try_from(u.0) {
+                Ok(val) => Ok(Self(val)),
+                Err(e) => Err(e),
+            }
+        }
+    }
+    impl TryFrom<CheckUsize> for CheckI128 {
+        type Error = <i128 as TryFrom<usize>>::Error;
+        fn try_from(u: CheckUsize) -> Result<CheckI128, Self::Error> {
+            match <i128>::try_from(u.0) {
+                Ok(val) => Ok(Self(val)),
+                Err(e) => Err(e),
+            }
+        }
+    }
+    impl TryFrom<CheckIsize> for CheckI128 {
+        type Error = <i128 as TryFrom<isize>>::Error;
+        fn try_from(u: CheckIsize) -> Result<CheckI128, Self::Error> {
+            match <i128>::try_from(u.0) {
+                Ok(val) => Ok(Self(val)),
+                Err(e) => Err(e),
+            }
+        }
+    }
+    impl TryFrom<CheckI8> for CheckUsize {
+        type Error = <usize as TryFrom<i8>>::Error;
+        fn try_from(u: CheckI8) -> Result<CheckUsize, Self::Error> {
+            match <usize>::try_from(u.0) {
+                Ok(val) => Ok(Self(val)),
+                Err(e) => Err(e),
+            }
+        }
+    }
+    impl TryFrom<CheckI16> for CheckUsize {
+        type Error = <usize as TryFrom<i16>>::Error;
+        fn try_from(u: CheckI16) -> Result<CheckUsize, Self::Error> {
+            match <usize>::try_from(u.0) {
+                Ok(val) => Ok(Self(val)),
+                Err(e) => Err(e),
+            }
+        }
+    }
+    impl TryFrom<CheckI32> for CheckUsize {
+        type Error = <usize as TryFrom<i32>>::Error;
+        fn try_from(u: CheckI32) -> Result<CheckUsize, Self::Error> {
+            match <usize>::try_from(u.0) {
+                Ok(val) => Ok(Self(val)),
+                Err(e) => Err(e),
+            }
+        }
+    }
+    impl TryFrom<CheckI64> for CheckUsize {
+        type Error = <usize as TryFrom<i64>>::Error;
+        fn try_from(u: CheckI64) -> Result<CheckUsize, Self::Error> {
+            match <usize>::try_from(u.0) {
+                Ok(val) => Ok(Self(val)),
+                Err(e) => Err(e),
+            }
+        }
+    }
+    impl TryFrom<CheckI128> for CheckUsize {
+        type Error = <usize as TryFrom<i128>>::Error;
+        fn try_from(u: CheckI128) -> Result<CheckUsize, Self::Error> {
+            match <usize>::try_from(u.0) {
+                Ok(val) => Ok(Self(val)),
+                Err(e) => Err(e),
+            }
+        }
+    }
+    impl TryFrom<CheckU32> for CheckUsize {
+        type Error = <usize as TryFrom<u32>>::Error;
+        fn try_from(u: CheckU32) -> Result<CheckUsize, Self::Error> {
+            match <usize>::try_from(u.0) {
+                Ok(val) => Ok(Self(val)),
+                Err(e) => Err(e),
+            }
+        }
+    }
+    impl TryFrom<CheckU64> for CheckUsize {
+        type Error = <usize as TryFrom<u64>>::Error;
+        fn try_from(u: CheckU64) -> Result<CheckUsize, Self::Error> {
+            match <usize>::try_from(u.0) {
+                Ok(val) => Ok(Self(val)),
+                Err(e) => Err(e),
+            }
+        }
+    }
+    impl TryFrom<CheckU128> for CheckUsize {
+        type Error = <usize as TryFrom<u128>>::Error;
+        fn try_from(u: CheckU128) -> Result<CheckUsize, Self::Error> {
+            match <usize>::try_from(u.0) {
+                Ok(val) => Ok(Self(val)),
+                Err(e) => Err(e),
+            }
+        }
+    }
+    impl TryFrom<CheckIsize> for CheckUsize {
+        type Error = <usize as TryFrom<isize>>::Error;
+        fn try_from(u: CheckIsize) -> Result<CheckUsize, Self::Error> {
+            match <usize>::try_from(u.0) {
+                Ok(val) => Ok(Self(val)),
+                Err(e) => Err(e),
+            }
+        }
+    }
+    impl TryFrom<CheckU16> for CheckIsize {
+        type Error = <isize as TryFrom<u16>>::Error;
+        fn try_from(u: CheckU16) -> Result<CheckIsize, Self::Error> {
+            match <isize>::try_from(u.0) {
+                Ok(val) => Ok(Self(val)),
+                Err(e) => Err(e),
+            }
+        }
+    }
+    impl TryFrom<CheckU32> for CheckIsize {
+        type Error = <isize as TryFrom<u32>>::Error;
+        fn try_from(u: CheckU32) -> Result<CheckIsize, Self::Error> {
+            match <isize>::try_from(u.0) {
+                Ok(val) => Ok(Self(val)),
+                Err(e) => Err(e),
+            }
+        }
+    }
+    impl TryFrom<CheckU64> for CheckIsize {
+        type Error = <isize as TryFrom<u64>>::Error;
+        fn try_from(u: CheckU64) -> Result<CheckIsize, Self::Error> {
+            match <isize>::try_from(u.0) {
+                Ok(val) => Ok(Self(val)),
+                Err(e) => Err(e),
+            }
+        }
+    }
+    impl TryFrom<CheckU128> for CheckIsize {
+        type Error = <isize as TryFrom<u128>>::Error;
+        fn try_from(u: CheckU128) -> Result<CheckIsize, Self::Error> {
+            match <isize>::try_from(u.0) {
+                Ok(val) => Ok(Self(val)),
+                Err(e) => Err(e),
+            }
+        }
+    }
+    impl TryFrom<CheckI32> for CheckIsize {
+        type Error = <isize as TryFrom<i32>>::Error;
+        fn try_from(u: CheckI32) -> Result<CheckIsize, Self::Error> {
+            match <isize>::try_from(u.0) {
+                Ok(val) => Ok(Self(val)),
+                Err(e) => Err(e),
+            }
+        }
+    }
+    impl TryFrom<CheckI64> for CheckIsize {
+        type Error = <isize as TryFrom<i64>>::Error;
+        fn try_from(u: CheckI64) -> Result<CheckIsize, Self::Error> {
+            match <isize>::try_from(u.0) {
+                Ok(val) => Ok(Self(val)),
+                Err(e) => Err(e),
+            }
+        }
+    }
+    impl TryFrom<CheckI128> for CheckIsize {
+        type Error = <isize as TryFrom<i128>>::Error;
+        fn try_from(u: CheckI128) -> Result<CheckIsize, Self::Error> {
+            match <isize>::try_from(u.0) {
+                Ok(val) => Ok(Self(val)),
+                Err(e) => Err(e),
+            }
+        }
+    }
+    impl TryFrom<CheckUsize> for CheckIsize {
+        type Error = <isize as TryFrom<usize>>::Error;
+        fn try_from(u: CheckUsize) -> Result<CheckIsize, Self::Error> {
+            match <isize>::try_from(u.0) {
+                Ok(val) => Ok(Self(val)),
+                Err(e) => Err(e),
+            }
+        }
+    }
+    impl Meta for CheckU8 {
+        fn name() -> String {
+            String::from("CheckU8")
+        }
+        fn non_zero() -> Self {
+            Self::try_from(1).unwrap()
+        }
+    }
+    impl Meta for CheckU16 {
+        fn name() -> String {
+            String::from("CheckU16")
+        }
+        fn non_zero() -> Self {
+            Self::try_from(1).unwrap()
+        }
+    }
+    impl Meta for CheckU32 {
+        fn name() -> String {
+            String::from("CheckU32")
+        }
+        fn non_zero() -> Self {
+            Self::try_from(1).unwrap()
+        }
+    }
+    impl Meta for CheckU64 {
+        fn name() -> String {
+            String::from("CheckU64")
+        }
+        fn non_zero() -> Self {
+            Self::try_from(1).unwrap()
+        }
+    }
+    impl Meta for CheckU128 {
+        fn name() -> String {
+            String::from("CheckU128")
+        }
+        fn non_zero() -> Self {
+            Self::try_from(1).unwrap()
+        }
+    }
+    impl Meta for CheckI8 {
+        fn name() -> String {
+            String::from("CheckI8")
+        }
+        fn non_zero() -> Self {
+            Self::try_from(1).unwrap()
+        }
+    }
+    impl Meta for CheckI16 {
+        fn name() -> String {
+            String::from("CheckI16")
+        }
+        fn non_zero() -> Self {
+            Self::try_from(1).unwrap()
+        }
+    }
+    impl Meta for CheckI32 {
+        fn name() -> String {
+            String::from("CheckI32")
+        }
+        fn non_zero() -> Self {
+            Self::try_from(1).unwrap()
+        }
+    }
+    impl Meta for CheckI64 {
+        fn name() -> String {
+            String::from("CheckI64")
+        }
+        fn non_zero() -> Self {
+            Self::try_from(1).unwrap()
+        }
+    }
+    impl Meta for CheckI128 {
+        fn name() -> String {
+            String::from("CheckI128")
+        }
+        fn non_zero() -> Self {
+            Self::try_from(1).unwrap()
+        }
+    }
+}
